@@ -7,8 +7,7 @@
 
 An assertion is just a function (or a method) that, upon failure, throws an
 instance of `easytest\Failure` or, in PHP 7, an instance of `AssertionError`.
-You may also want to begin your function name with `assert`, but this is up to
-you, since you are the one using it.
+You might also begin the function name with `assert`, but this is optional.
 
 In the simplest case, you may just want to write a function that wraps PHP's
 `assert()` or another EasyTest assertion.
