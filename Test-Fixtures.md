@@ -274,7 +274,7 @@ function test_buffering() {
 ```
 
 If the assertion fails, the output buffer is never deleted. Even if we use
-ob_get_clean() to delete the buffer as we get its contents, this does not
+`ob_get_clean()` to delete the buffer as we get its contents, this does not
 guard against errors happening during the call to the function under test.
 
 If this is the only test using an output buffer, we can delete the buffer upon
