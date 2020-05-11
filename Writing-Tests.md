@@ -1,5 +1,3 @@
-# Writing Tests
-
 - [Getting Started](#getting-started)
 - [The Basics](#the-basics)
 - [Testing Exceptions and Errors](#testing-exceptions-and-errors)
@@ -8,7 +6,7 @@
 - [Subtests](#subtests)
 
 
-## Getting Started
+# Getting Started
 
 Use Composer to add EasyTest to your project:
 
@@ -19,7 +17,7 @@ hereon, we're just going to refer to the executable as `easytest` instead of
 referring to the whole path.
 
 
-## The Basics
+# The Basics
 
 Run EasyTest on the command line from your project's root source directory. It
 will search the directory for any tests and run them.
@@ -253,7 +251,7 @@ For a full list of EasyTest's assertions, please review EasyTest's
 [README](https://github.com/gnarlyquack/easytest).
 
 
-## Testing Exceptions and Errors
+# Testing Exceptions and Errors
 
 `easytest\assert_throws()` takes the name of an expected exception as well as
 a callable and fails if invoking the callable doesn't result in the expected
@@ -278,7 +276,7 @@ exception. EasyTest converts any (non-fatal) error into an `ErrorException`
 and throws it.
 
 
-## Output
+# Output
 
 Use PHP's output buffers to test output:
 
@@ -332,7 +330,7 @@ We can follow the provided suggestion to see the output:
     Passed: 11, Output: 1
 
 
-## Skipping Tests
+# Skipping Tests
 
 Your test suite might want to skip tests if it determines those tests are
 incapable of being run, e.g., a version requirement might not be met or an
@@ -381,7 +379,7 @@ We can follow the provided suggestion to see what tests were skipped:
     Passed: 9, Skipped: 1
 
 
-## Subtests
+# Subtests
 
 While building out our greet module, we've decided we want a different
 greeting based on the time of day. We might be tempted to write:
