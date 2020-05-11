@@ -66,7 +66,7 @@ function teardown_function() {
 
 function test_one(easytest\Context $context) {
     $context->teardown(function() { echo __FUNCTION__; });
-    easytest\fail('Execution stops here.');
+    easytest\fail('Test execution stops here.');
     echo __FUNCTION__, "\n";
 }
 
@@ -101,7 +101,7 @@ class Test {
 
     function test_one(easytest\Context $context) {
         $context->teardown(function() { echo __FUNCTION__; });
-        easytest\fail('Execution stops here.');
+        easytest\fail('Test execution stops here.');
         echo __METHOD__, "\n";
     }
 
@@ -134,7 +134,7 @@ Running EasyTest shows the order and frequency with which everything happens.
 
 
     FAILED: test_one
-    Execution stops here.
+    Test execution stops here.
 
     in test_fixtures/test.php on line 24
 
@@ -181,7 +181,7 @@ Running EasyTest shows the order and frequency with which everything happens.
 
 
     FAILED: Test::test_one
-    Execution stops here.
+    Test execution stops here.
 
     in test_fixtures/test.php on line 59
 
@@ -234,7 +234,7 @@ As you can see, execution of a test stops when an assertion fails or on any
 error. Teardown functions run regardless of whether or not a test completes.
 Teardown functions are only skipped if a corresponding setup function does not
 complete. This could happen because of an error in the setup function or
-because a skipped test was triggered. If a setup function does not complete,
+because `easytest\skip()` was called. If a setup function does not complete,
 the item being setup (function, class, file, etc.) is skipped.
 
 Of note is the `setup.php` file, which sets up and tears down a directory of
@@ -246,13 +246,13 @@ and `teardown_directory()` is run just prior to ascending out of the
 directory. This file may also include definitions needed for the tests in the
 current directory and need not even define directory fixture functions at all.
 
-Just like test functions and methods, EasyTest matches fixture functions
-without regards to case and matches on both CamelCase and snake_case. Fixture
-functions are recognized if their name begins with the names shown in the
-example above. Fixture method names need to match exactly, e.g., an object
-setup method needs be a case-insensitive match to either `setup_obect()` or
-`SetupObject()`. If multiple setup and/or teardown functions are ever found,
-an error is reported and the associated item is skipped.
+Just like tests, EasyTest matches fixture functions without regards to case
+and matches on both CamelCase and snake_case. Fixture functions are recognized
+if their name begins with the names shown in the example above. Fixture method
+names need to match exactly, e.g., an object setup method needs be a
+case-insensitive match to either `setup_obect()` or `SetupObject()`. If
+multiple setup and/or teardown functions are ever found, an error is reported
+and the associated item is skipped.
 
 
 # Managing Resources
@@ -581,7 +581,7 @@ which takes an iterable of iterables as its only parameter.
 
 Building upon the previous example, let's assume we want to support multiple
 database and payment processor backends. Client code (in our example,
-`OrderManager`) should function identically regardless of the backend used. To
+`OrderManager`) should function identically regardless of the backend. To
 ensure this, we'd like to run the same tests against the various database and
 payment processor backends we support.
 
