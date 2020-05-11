@@ -22,7 +22,7 @@ referring to the whole path.
 ## The Basics
 
 Run EasyTest on the command line from your project's root source directory. It
-will search your directory for any tests and run them.
+will search the directory for any tests and run them.
 
     $ easytest
 
@@ -136,22 +136,22 @@ function test_goodbye_to_humans(GoodBye $adieu) {
 `setup_function()` is run before each of our test functions and can return
 arguments needed by our tests. EasyTest unpacks these arguments and uses them
 to call our test functions. This is why the return parameter is an array:
-although in this case our tests only take one parameter, other tests might
+although our tests in the example only take one parameter, other tests might
 require multiple parameters.
 
 We can also define a corresponding `teardown_function()` that is run after
 each test. It too is passed the arguments from `setup_function()` so they can
 be cleaned up as necessary.
 
-We added namespaces to the test files to prevent a fatal error due to
-duplicate definitions of `setup_function()`. Alternatively, we could give the
-functions different names. EasyTest recognizes them as long as the name starts
-with `setup_function`. For example, we could have named our setup functions
-`setup_function_to_test_hello` and `setup_function_to_test_goodbye`. Teardown
-functions work the same way.
+We added namespaces to the test files to prevent a fatal error from duplicate
+definitions of `setup_function()`. Alternatively, we could give the functions
+different names. EasyTest recognizes them as long as the name starts with
+`setup_function`. For example, we could have named our setup functions
+`setup_function_to_test_hello()` and `setup_function_to_test_goodbye()`.
+Teardown functions work the same way.
 
 Since these files are looking pretty thin, and since they both test the same
-greet module, we might decide to consolidate them:
+module, we might decide to consolidate them:
 
 ```php
 <?php
@@ -200,7 +200,7 @@ class whose name begins with `test` is instantiated, and any of its public
 methods whose name begins with `test` are run. Classes can define public
 methods named `setup()` and `teardown()` to setup and teardown its tests.
 Unlike `setup_function()` and `teardown_function()`, they don't pass or
-receive arguments as all methods have access to their object's shared state.
+receive arguments since methods have access to their object's shared state.
 
 A test file may contain any combination of test functions and test classes.
 
@@ -249,9 +249,8 @@ Although you may find EasyTest's assertions easier to work with, they are by
 no means comprehensive. PHP's `assert()` is available so you can make any
 assertion you need.
 
-This is probably most of what you'll need for the majority of your tests. For
-a full list of EasyTest's features, including a list of its assertions, please
-review EasyTest's [README](https://github.com/gnarlyquack/easytest).
+For a full list of EasyTest's assertions, please review EasyTest's
+[README](https://github.com/gnarlyquack/easytest).
 
 
 ## Testing Exceptions and Errors
@@ -303,7 +302,7 @@ test passed or failed. EasyTest reports an error if you start an output buffer
 and don't delete it.
 
 EasyTest also buffers our tests to capture and report any output that we don't
-handle during our test run. Although EasyTest indicates output occurred, it
+handle during the test run. Although EasyTest indicates output occurred, it
 doesn't display it unless it occurred in a test that fails or has an error.
 
     $ easytest
@@ -426,8 +425,8 @@ The problem is, if any test fails, the next test isn't run.
     Seconds elapsed: 0.002
     Failed: 1
 
-Subtests ensure our assertions are run even if one fails. EasyTest
-implements this by passing every test function and method an instance of
+Subtests ensure our assertions are run even if one fails. EasyTest implements
+this by passing every test function and test method an instance of
 `easytest\Context`. This is always passed as the last parameter.
 
 ```php
