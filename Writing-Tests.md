@@ -1,5 +1,6 @@
 - [Getting Started](#getting-started)
-- [The Basics](#the-basics)
+- [Test Discovery](#test-discovery)
+- [Making Assertions](#making-assertions)
 - [Testing Exceptions and Errors](#testing-exceptions-and-errors)
 - [Output](#output)
 - [Skipping Tests](#skipping-tests)
@@ -17,10 +18,10 @@ hereon, we're just going to refer to the executable as `easytest` instead of
 referring to the whole path.
 
 
-# The Basics
+# Test Discovery
 
 Run EasyTest on the command line from your project's root source directory. It
-will search the directory for any tests and run them.
+searches the directory for tests and runs any it finds.
 
     $ easytest
 
@@ -28,10 +29,31 @@ will search the directory for any tests and run them.
 
 Fair enough. Let's add some.
 
-Although we could put our tests in individual files right in our source
-directory, we should probably keep them organized together. So instead let's
-create a directory in our source directory named `tests`, inside of which we
-might have (after several iterations) the following files:
+EasyTest operates as follows:
+
+- A **test** is a function or method whose name begins with `test`. When such
+  a function or method is found, it is run.
+- Test methods are organized into test classes, which is any class whose name
+  begins with `test`. When such a class is found, an instance of it is
+  instantiated and it is searched for test methods.
+- Test functions and test classes are organized into test files, which is any
+  PHP source file whose name begins with `test` (and has file extension
+  `.php`). When such a file is found, it is included and searched for test
+  functions and test classes. A test file may contain any combination of test
+  functions and/or test classes.
+- Test files may be organized into test directories, which is any directory
+  whose name begins with `test`. When such a directory is found, it is
+  searched for test files and also for subdirectories whose name also begins
+  with `test`.
+
+Names are matched without regards to case.
+
+EasyTest also loads Composer's autoloader so our project is automatically
+visible to our tests.
+
+Knowing this, we could put our tests in individual files right in our source
+directory. But let's instead keep them organized in a subdirectory named
+`tests`. After several iterations, we might end up with the following files:
 
 ```php
 <?php
@@ -52,7 +74,7 @@ function test_hello_to_humans() {
 
 ```php
 <?php
-// test_goodbye.php
+// tests/test_goodbye.php
 
 use example\greet\GoodBye;
 
@@ -78,78 +100,8 @@ looks something like:
     Seconds elapsed: 0.002
     Passed: 4
 
-Note the pattern: Any directory whose name begins with `test` is searched for
-files and subdirectories whose name also begins with `test`. Any file whose
-name begins with `test` is searched for functions whose name begins with
-`test`. Any function whose name begins with `test` is run. EasyTest also loads
-Composer's autoloader on start-up so our project is visible to our tests.
-
-Right now, each test creates either its own Hello or GoodBye. We could extract
-this code into its own functions and centralize our test setup:
-
-```php
-<?php
-// tests/test_hello.php
-
-namespace hellos;
-
-use easytest;
-use example\greet\Hello;
-
-function setup_function() {
-    return [new Hello];
-}
-
-function test_hello_to_the_world(Hello $hello) {
-    easytest\assert_identical('Hello, world!', $hello->greet());
-}
-
-function test_hello_to_humans(Hello $hello) {
-    easytest\assert_identical('Hello, human!', $hello->greet('human'));
-}
-```
-
-```php
-<?php
-// test_goodbye.php
-
-namespace goodbyes;
-
-use easytest;
-use example\greet\GoodBye;
-
-function setup_function() {
-    return [new GoodBye];
-}
-
-function test_goodbye_to_the_world(GoodBye $adieu) {
-    easytest\assert_identical('Goodbye, cruel world!', $adieu->bid());
-}
-
-function test_goodbye_to_humans(GoodBye $adieu) {
-    easytest\assert_identical('Goodbye, human!', $adieu->bid('human'));
-}
-```
-
-`setup_function()` is run before each of our test functions and can return
-arguments needed by our tests. EasyTest unpacks these arguments and uses them
-to call our test functions. This is why the return parameter is an array:
-although our tests in the example only take one parameter, other tests might
-require multiple parameters.
-
-We can also define a corresponding `teardown_function()` that is run after
-each test. It too is passed the arguments from `setup_function()` so they can
-be cleaned up as necessary.
-
-We added namespaces to the test files to prevent a fatal error from duplicate
-definitions of `setup_function()`. Alternatively, we could give the functions
-different names. EasyTest recognizes them as long as the name starts with
-`setup_function`. For example, we could have named our setup functions
-`setup_function_to_test_hello()` and `setup_function_to_test_goodbye()`.
-Teardown functions work the same way.
-
-Since these files are looking pretty thin, and since they both test the same
-module, we might decide to consolidate them:
+To be honest, these files are looking pretty thin, and since they both test
+the same module "greet", we might decide to consolidate them:
 
 ```php
 <?php
@@ -160,76 +112,50 @@ use example\greet\Hello;
 
 
 class TestHello {
-    private $hello;
-
-    public function SetUp() {
-        $this->hello = new Hello;
-    }
-
     public function TestHelloToTheWorld() {
-        easytest\assert_identical('Hello, world!', $this->hello->greet());
+        $hello = new Hello;
+        easytest\assert_identical('Hello, world!', $hello->greet());
     }
 
     public function TestHelloToHumans() {
-        easytest\assert_identical('Hello, human!', $this->hello->greet('human'));
+        $hello = new Hello;
+        easytest\assert_identical('Hello, human!', $hello->greet('human'));
     }
 }
 
 
 class TestGoodBye {
-    private $adieu;
-
-    public function SetUp() {
-        $this->adieu = new GoodBye;
-    }
-
     function TestGoodByeToTheWorld() {
-        easytest\assert_identical('Goodbye, cruel world!', $this->adieu->bid());
+        $adieu = new GoodBye;
+        easytest\assert_identical('Goodbye, cruel world!', $adieu->bid());
     }
 
     function TestGoodByeToHumans() {
-        easytest\assert_identical('Goodbye, human!', $this->adieu->bid('human'));
+        $adieu = new GoodBye;
+        easytest\assert_identical('Goodbye, human!', $adieu->bid('human'));
     }
 }
 ```
 
-The pattern we noted before also applies to classes: within a test file, any
-class whose name begins with `test` is instantiated, and any of its public
-methods whose name begins with `test` are run. Classes can define public
-methods named `setup()` and `teardown()` to setup and teardown its tests.
-Unlike `setup_function()` and `teardown_function()`, they don't pass or
-receive arguments since methods have access to their object's shared state.
+And checking with EasyTest:
 
-A test file may contain any combination of test functions and test classes.
+    $ easytest
 
-You may have noticed something in the previous example: EasyTest matches all
-names without regards to case, and it matches on both CamelCase and
-snake_case. So we could have written our function-based test files like:
+    ....
 
-```php
-<?php
-// tests/test_hello.php
 
-namespace hellos;
+    Seconds elapsed: 0.002
+    Passed: 4
 
-use easytest;
-use example\greet\Hello;
 
-function setupFunction() {
-    return [new Hello];
-}
+# Making Assertions
 
-function testHelloToTheWorld(Hello $hello) {
-    easytest\assert_identical('Hello, world!', $hello->greet());
-}
+A test "passes" unless an assertion fails or some other error happens.
+Failures and errors are signalled by the throwing of an exception. This means
+a test typically ends immediately when a failure or an error happens.
 
-function testHelloToHumans(Hello $hello) {
-    easytest\assert_identical('Hello, human!', $hello->greet('human'));
-}
-```
-
-So far our tests have only used assertions provided by EasyTest, but we could
-also use PHP's `assert()`:
+Although prior examples use assertions provided by EasyTest, we could use
+PHP's `assert()`:
 
 ```php
 function testHelloToTheWorld() {
@@ -245,17 +171,19 @@ function testHelloToTheWorld() {
 
 Although you may find EasyTest's assertions easier to work with, they are by
 no means comprehensive. PHP's `assert()` is available so you can make any
-assertion you need.
+assertion you need (although you can always [write your
+own](https://github.com/gnarlyquack/easytest/wiki/Writing-Assertions)).
 
-For a full list of EasyTest's assertions, please review EasyTest's
+A full list of EasyTest's assertions is listed in the
 [README](https://github.com/gnarlyquack/easytest).
-
 
 # Testing Exceptions and Errors
 
-`easytest\assert_throws()` takes the name of an expected exception as well as
-a callable and fails if invoking the callable doesn't result in the expected
-exception being thrown. Otherwise it returns the exception instance.
+Although nothing stops you from using `try` and `catch` to test for
+exceptions, EasyTest provides `easytest\assert_throws()` to (hopefully)
+simplify the process. The function takes the name of an expected exception as
+well as a callable and fails if invoking the callable doesn't result in the
+expected exception being thrown. Otherwise it returns the exception instance.
 
 ```php
 function test_exception() {
@@ -281,26 +209,25 @@ and throws it.
 Use PHP's output buffers to test output:
 
 ```php
-function setup_function() {
+function test_buffering() {
     ob_start();
-}
-
-function teardown_function() {
-    ob_end_clean();
-}
-
-function test_output() {
-    function_that_emits_output();
+    function_that_produces_output();
     easytest\assert_identical('Expected output', ob_get_contents());
+    ob_end_clean();
 }
 ```
 
-We use a teardown function here to ensure the buffer is deleted whether our
-test passed or failed. EasyTest reports an error if you start an output buffer
-and don't delete it.
+Although this example works, it is flawed: if the assertion fails, the output
+buffer is never deleted, and EasyTest reports an error (in addition to the
+failure) if we start an output buffer and never delete it. Even if we use
+`ob_get_clean()` to delete the buffer as we get its contents, the function
+under test might generate an error and the assertion may never be reached. To
+remedy this, we can use [fixture
+functions](https://github.com/gnarlyquack/easytest/wiki/Test-Fixtures) to
+ensure the output buffer is always deleted after a test.
 
-EasyTest also buffers our tests to capture and report any output that we don't
-handle during the test run. Although EasyTest indicates output occurred, it
+EasyTest also buffers our tests to capture and report any output we don't
+handle during the test run. Although EasyTest indicates when output occurs, it
 doesn't display it unless it occurred in a test that fails or has an error.
 
     $ easytest
@@ -334,7 +261,8 @@ We can follow the provided suggestion to see the output:
 
 Your test suite might want to skip tests if it determines those tests are
 incapable of being run, e.g., a version requirement might not be met or an
-extension might not be enabled.
+extension might not be enabled. For this, use `easytest\skip()`, which takes a
+string explaining why the test is being skipped.
 
 ```php
 function test_skip() {
@@ -342,7 +270,8 @@ function test_skip() {
         easytest\skip('PHP version must be less than ' . MAX_VERSION);
     }
 
-    // run test
+    // The actual test goes here. This is never reached if the version
+    // requirement isn't met.
 }
 ```
 
@@ -387,10 +316,10 @@ greeting based on the time of day. We might be tempted to write:
 ```php
 function test_greetings() {
     $greetings = [
-        [new MorningGreet, 'Good morning, world!'],
-        [new AfternoonGreet, 'Good afternoon, world!'],
-        [new EveningGreet, 'Good evening, world!'],
-        [new NightGreet, 'Good night, world!'],
+        [new MorningGreeting, 'Good morning, world!'],
+        [new AfternoonGreeting, 'Good afternoon, world!'],
+        [new EveningGreeting, 'Good evening, world!'],
+        [new NightGreeting, 'Good night, world!'],
     ];
 
     foreach ($greetings as $greeting) {
@@ -423,17 +352,17 @@ The problem is, if any test fails, the next test isn't run.
     Seconds elapsed: 0.002
     Failed: 1
 
-Subtests ensure our assertions are run even if one fails. EasyTest implements
-this by passing every test function and test method an instance of
-`easytest\Context`. This is always passed as the last parameter.
+Subtests ensure our test continues even if an assertion fails. EasyTest
+implements this by providing every test function and test method an instance
+of `easytest\Context`. This is always passed as the last parameter.
 
 ```php
 function test_greetings(easytest\Context $context) {
     $greetings = [
-        [new MorningGreet, 'Good morning, world!'],
-        [new AfternoonGreet, 'Good afternoon, world!'],
-        [new EveningGreet, 'Good evening, world!'],
-        [new NightGreet, 'Good night, world!'],
+        [new MorningGreeting, 'Good morning, world!'],
+        [new AfternoonGreeting, 'Good afternoon, world!'],
+        [new EveningGreeting, 'Good evening, world!'],
+        [new NightGreeting, 'Good night, world!'],
     ];
 
     foreach ($greetings as $greeting) {
@@ -448,7 +377,7 @@ function test_greetings(easytest\Context $context) {
 ```
 
 Actually, we can make our test more straightforward. `easytest\Context`
-provides methods with a signature identical to each of EasyTest's assertions,
+provides methods with signatures identical to each of EasyTest's assertions,
 except they behave as if they were run inside `easytest\Context::subtest()`,
 i.e., your test continues even if they fail.
 
@@ -468,7 +397,7 @@ function test_greetings(easytest\Context $context) {
 }
 ```
 
-Now we will see all failures:
+Now we see all failures:
 
     $ easytest
 
