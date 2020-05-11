@@ -121,6 +121,6 @@ easytest\fail($reason);
 
 # Please Contribute!
 
-EasyTest's assertions cover a lot of ground but aren't comprehensive by any
-means. If you feel there's an assertion that should really be included with
-the framework, please contribute with a pull request.
+EasyTest's assertions cover the basics but aren't comprehensive by any means.
+If you feel there's an assertion that should really be included with the
+framework, please open an issue and (ideally) contribute a pull request!
