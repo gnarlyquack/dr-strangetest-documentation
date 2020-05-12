@@ -1,7 +1,8 @@
 - [Fixture Functions](#fixture-functions)
 - [Managing Resources](#managing-resources)
-- [Passing State](#passing-state)
-- [Multiple Execution of Tests](#multiple-execution-of-tests)
+- [Providing Fixtures to Tests](#providing-fixtures-to-tests)
+- [Multiple Parameterized Test
+  Execution](#multiple-parameterized-test-execution)
 
 
 # Fixture Functions
@@ -308,23 +309,23 @@ function test_buffering(easytest\Context $context) {
 ```
 
 
-# Passing State
+# Providing Fixtures to Tests
 
-Setup functions can pass state to tests and other setup functions by returning
-an array of arguments. State from "higher-level" functions is passed to
-"lower-level" functions, e.g., state returned from a directory setup function
-is passed to any setup functions and tests within the directory and any
-subdirectories. Lower-level functions accept these arguments by adding
-parameters to their signature. As EasyTest performs discovery, it unpacks the
-arguments from the previous setup function and provides them to the parameters
-of the current function.
+You may have noticed that EasyTest's fixture functions form a natural hierarchy
+with directories at the top and individual tests at the bottom. Setup functions
+higher in the hierarchy can pass state to setup functions and/or tests lower in
+the hierarchy by returning an array of arguments. As EasyTest performs
+discovery, these arguments are unpacked and automatically passed to subordinate
+fixture functions, class constructors, and test functions, which accept them by
+adding parameters to their signature.
 
-Lower-level setup functions "intercept" state from higher-level setup
-functions and may add to, remove from, alter or simply pass through the
-arguments it receives (although in the latter case, the function is presumably
-doing some other work). If a setup function is not defined for a particular
-level, arguments are passed directly to either the next lower-level setup
-function or to a test function or test class.
+Subordinate setup functions "intercept" state from higher setup functions.
+Whatever these functions return replaces whatever arguments are passed to it.
+This is true regardless of whether or not a function explicitly accepts the
+arguments provided to it. Functions may add to, remove from, alter or simply
+pass through the arguments they receive. If a setup function is not defined at a
+particular level in the hierarchy, arguments are passed directly to the next
+subordinate setup function, test function or test class.
 
 Arguments are also passed to teardown functions, but these functions never
 return arguments, they only clean up the arguments given to them.
@@ -570,14 +571,14 @@ function test(OrderManager $order) {
 ```
 
 
-# Multiple Execution of Tests
+# Multiple Parameterized Test Execution
 
-Directory setup functions and file setup functions offer one additional
-feature: they may return an iterable of argument iterables. EasyTest then runs
-subordinate tests once with each argument iterable. In order for EasyTest to
-know you're returning an iterable of iterables instead of just a single
-iterable, arguments must be returned using the function `easytest\arglists()`,
-which takes an iterable of iterables as its only parameter.
+Directory setup functions and file setup functions offer one additional feature:
+they may return multiple sets of arguments. EasyTest then runs subordinate
+fixture functions and tests once with each set of arguments. In order for
+EasyTest to know you're returning multiple sets of arguments instead of just
+one, arguments must be returned using the function `easytest\arglists()`, which
+takes an iterable of iterables as its only parameter.
 
 Building upon the previous example, let's assume we want to support multiple
 database and payment processor backends. Client code (in our example,
