@@ -29,10 +29,10 @@ searches the directory for tests and runs any it finds.
 
 Fair enough. Let's add some.
 
-EasyTest operates as follows:
+EasyTest discovers tests as follows:
 
-- A **test** is a function or method whose name begins with `test`. When such
-  a function or method is found, it is run.
+- A **test** is a function or method whose name begins with `test`. When such a
+  function or method is found, it is run.
 - Test methods are organized into test classes, which is any class whose name
   begins with `test`. When such a class is found, an instance of it is
   instantiated and it is searched for test methods.
@@ -42,14 +42,9 @@ EasyTest operates as follows:
   functions and test classes. A test file may contain any combination of test
   functions and/or test classes.
 - Test files may be organized into test directories, which is any directory
-  whose name begins with `test`. When such a directory is found, it is
-  searched for test files and also for subdirectories whose name also begins
-  with `test`.
-
-Names are matched without regards to case.
-
-EasyTest also loads Composer's autoloader so our project is automatically
-visible to our tests.
+  whose name begins with `test`. When such a directory is found, it is searched
+  for test files and also for subdirectories whose name also begins with
+  `test`.
 
 Knowing this, we could put our tests in individual files right in our source
 directory. But let's instead keep them organized in a subdirectory named
@@ -100,6 +95,9 @@ looks something like:
     Seconds elapsed: 0.002
     Passed: 4
 
+Since we're using Composer, EasyTest loads Composer's autoloader so our project
+is automatically visible to our tests.
+
 To be honest, these files are looking pretty thin, and since they both test
 the same module "greet", we might decide to consolidate them:
 
@@ -146,6 +144,8 @@ And checking with EasyTest:
 
     Seconds elapsed: 0.002
     Passed: 4
+
+As you can see, EasyTest matches names case-insensitively.
 
 
 # Making Assertions
