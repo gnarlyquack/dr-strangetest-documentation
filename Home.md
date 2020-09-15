@@ -1,13 +1,11 @@
-This wiki provides a more illustrative walkthrough of how EasyTest works and
-its features than is provided in the
-[README](https://github.com/gnarlyquack/easytest), which offers "Just the
-Facts". Although every effort is made to keep this wiki up-to-date, the README
-will always have the most current information.
+Welcome to EasyTest, a testing framework for PHP.
 
-For the "full tutorial" experience, I recommend going through the pages in the
-following order:
+In addition to this wiki, you may also want to consult the
+[README](https://github.com/gnarlyquack/easytest).
 
-1. [Writing Tests](https://github.com/gnarlyquack/easytest/wiki/Writing-Tests)
+# Contents
+
+1. [Writing Tests](https://github.com/gnarlyquack/easytest/wiki/1.-Writing-Tests)
    will get you up and running with EasyTest and tell you everything you need
    to know about writing tests.
 2. [Test Fixtures](https://github.com/gnarlyquack/easytest/wiki/Test-Fixtures)
@@ -17,6 +15,3 @@ following order:
    provides a comprehensive example on how to implement your own assertion if
    EasyTest doesn't provide the assertion you want and/or using PHP's
    `assert()` is impractical.
-
-Please open an issue and (ideally) contribute a fix if you find an error in
-these pages!
