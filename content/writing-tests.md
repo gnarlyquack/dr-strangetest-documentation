@@ -1,12 +1,6 @@
-- [What is a Test?](#what-is-a-test)
-- [Making Assertions](#making-assertions)
-- [Testing Exceptions and Errors](#testing-exceptions-and-errors)
-- [Skipping Tests](#skipping-tests)
-- [Subtests](#subtests)
-- [Test Dependencies](#test-dependencies)
+# Writing Tests
 
-
-# What is a Test?
+## What is a Test?
 
 EasyTest automatically discovers your tests using the following rules:
 
@@ -128,7 +122,7 @@ EasyTest endeavors to let you write your tests whichever way is most natural
 to you.
 
 
-# Making Assertions
+## Making Assertions
 
 A test "passes" unless an assertion fails or an error happens. Failures and
 errors are signalled by throwing an exception. This means a test typically
@@ -152,13 +146,13 @@ function testHelloToTheWorld() {
 Although you may find EasyTest's assertions easier to work with, they are by
 no means comprehensive. PHP's `assert` is available so you can make any
 assertion you need (although you can always [write your
-own](https://github.com/gnarlyquack/easytest/wiki/4.-Writing-Assertions)).
+own](@writing-assertions)).
 
 A full list of EasyTest's assertions is listed in the
 [README](https://github.com/gnarlyquack/easytest).
 
 
-# Testing Exceptions and Errors
+## Testing Exceptions and Errors
 
 Although nothing stops you from using `try` and `catch` to test for
 exceptions, EasyTest provides `easytest\assert_throws` to (hopefully)
@@ -185,7 +179,7 @@ You might note that dividing by zero actually triggers a warning (as of PHP
 error into an `ErrorException` and throws it.
 
 
-# Skipping Tests
+## Skipping Tests
 
 Your test suite might want to skip tests if it determines those tests are
 incapable of being run, e.g., a version requirement isn't met or an extension
@@ -236,7 +230,7 @@ the report. Follow the provided suggestion to see what tests were skipped:
     Passed: 9, Skipped: 1
 
 
-# Subtests
+## Subtests
 
 While building out your greet module, you've decided you want a different
 greeting based on the time of day. You might be tempted to write:
@@ -363,7 +357,7 @@ Now you can see all failures:
     Failed: 4
 
 
-# Test Dependencies
+## Test Dependencies
 
 Test dependencies allow a test (the "dependent") to require one or more other
 tests ("requisites") to first pass before the dependent is executed. If any
@@ -476,7 +470,7 @@ a method can depend on a function in the current namespace using the notation
 `::function_name`.
 
 [Multiple test
-execution](https://github.com/gnarlyquack/easytest/wiki/3.-Test-Fixtures#multiple-parameterized-test-execution)
+execution](@test-fixtures#multiple-parameterized-test-execution)
 has not been discussed yet, but `depend_on` also assumes a requisite is run
 with the same argument set as the dependent. A non-multiply-executed dependent
 that depends on a multiply-executed requisite will only be run if all runs of

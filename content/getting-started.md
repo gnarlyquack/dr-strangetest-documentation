@@ -1,18 +1,16 @@
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Running Tests](#running-tests)
+# Getting Started
 
 
-# Requirements
+## Requirements
 
 EasyTest supports PHP versions 5.3 through 7.4.
 
 For PHP 7, 'zend.assertions' must NOT be in production mode.
 
 
-# Installation
+## Installation
 
-## Phar (PHP Archive)
+### Phar (PHP Archive)
 
 The recommended way to use EasyTest is to [download a
 Phar](https://github.com/gnarlyquack/easytest/releases/latest/download/easytest.phar).
@@ -27,7 +25,7 @@ If you make the Phar executable you can run it directly:
 Note that PHP must have the Phar extension enabled.
 
 
-## Composer
+### Composer
 
 Install EasyTest using Composer:
 
@@ -42,7 +40,7 @@ to `vendor/bin`. Assuming the default `bin-dir`, run EasyTest as follows:
 From hereon, references to `easytest` refer to the location of the executable.
 
 
-# Running Tests
+## Running Tests
 
 Run EasyTest on the command line:
 

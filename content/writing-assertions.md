@@ -1,9 +1,6 @@
-- [Custom Assertion Functions](#custom-assertion-functions)
-- [A Comprehensive Example](#a-comprehensive-example)
-- [Please Contribute!](#please-contribute)
+# Writing Assertions
 
-
-# Custom Assertion Functions
+## Custom Assertion Functions
 
 An assertion is just a function (or a method) that, upon failure, throws an
 instance of `easytest\Failure` or, in PHP 7, an instance of `AssertionError`.
@@ -26,7 +23,7 @@ implement your assertion logic manually, which generally boils down to:
    compatible with EasyTest regardless of the version of PHP in use.
 
 
-# A Comprehensive Example
+## A Comprehensive Example
 
 Here is an implementation of `assert_identical`:
 
@@ -105,7 +102,7 @@ Finally, we use this message with `easytest\fail` to signal failure:
 easytest\fail($reason);
 ```
 
-# Please Contribute!
+## Please Contribute!
 
 EasyTest's assertions cover the basics but aren't comprehensive by any means.
 If you feel there's an assertion that should really be included with the

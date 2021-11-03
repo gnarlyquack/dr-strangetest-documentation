@@ -1,9 +1,4 @@
-- [Fixture Functions](#fixture-functions)
-- [Managing Resources](#managing-resources)
-- [Providing Fixtures to Tests](#providing-fixtures-to-tests)
-- [Multiple Parameterized Test
-  Execution](#multiple-parameterized-test-execution)
-
+# Test Fixtures
 
 A test's "fixture" is the initial state of the system under test. Setting this
 up is usually repetitive drudgery and may often constitute the majority of the
@@ -25,7 +20,7 @@ or even, at times, desirable. In these cases, we want to be able to manage
 fixture that is shared among several tests.
 
 
-# Fixture Functions
+## Fixture Functions
 
 EasyTest offers a number of functions to manage your test fixtures. This is
 perhaps most clearly laid out with an example:
@@ -266,7 +261,7 @@ teardown functions are ever found, an error is reported and the associated
 item is skipped.
 
 
-# Managing Resources
+## Managing Resources
 
 One of the most straightforward uses of fixture functions is to manage and
 cleanup resources that may persist beyond the lifetime of a test.
@@ -318,7 +313,7 @@ function test_buffering() {
 ```
 
 
-# Providing Fixtures to Tests
+## Providing Fixtures to Tests
 
 You may have noticed that EasyTest's fixture functions form a natural
 hierarchy with directories at the top and individual tests at the bottom.
@@ -605,7 +600,7 @@ return an `OrderManager`. The returned `OrderManager` replaces the `Database`
 and `PaymentProcessor` arguments and is provided to each test.
 
 
-# Multiple Parameterized Test Execution
+## Multiple Parameterized Test Execution
 
 Continuing with the previous example, let's assume we want to support multiple
 database and payment processor backends. Client code (in our example,

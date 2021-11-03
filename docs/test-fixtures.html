@@ -1,0 +1,589 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;family=Nunito:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"><title>Dr. Strangetest, a PHP testing framework</title></head><body><header><h1>Dr. Strangetest</h1><p id="subtitle">Or: How I Learned To Stop Worrying And Test The Code</p><p id="tagline">A testing framework for PHP</p><nav><ul id="navbar"><li><a href=".">Home</a></li><li><a href="documentation.html" class="active">Documentation</a></li><li><a href="contributing.html">Contributing</a></li></ul></nav></header><main><nav id="doc-toc"><ol><li class="collapsible"><input type="checkbox"><a href="getting-started.html">Getting Started</a><ol><li><a href="getting-started.html#requirements">Requirements</a></li><li class="collapsible"><input type="checkbox"><a href="getting-started.html#installation">Installation</a><ol><li><a href="getting-started.html#phar-php-archive">Phar (PHP Archive)</a></li><li><a href="getting-started.html#composer">Composer</a></li></ol></li><li><a href="getting-started.html#running-tests">Running Tests</a></li></ol></li><li class="collapsible"><input type="checkbox"><a href="writing-tests.html">Writing Tests</a><ol><li><a href="writing-tests.html#what-is-a-test">What is a Test?</a></li><li><a href="writing-tests.html#making-assertions">Making Assertions</a></li><li><a href="writing-tests.html#testing-exceptions-and-errors">Testing Exceptions and Errors</a></li><li><a href="writing-tests.html#skipping-tests">Skipping Tests</a></li><li><a href="writing-tests.html#subtests">Subtests</a></li><li><a href="writing-tests.html#test-dependencies">Test Dependencies</a></li></ol></li><li class="collapsible"><input type="checkbox" checked>Test Fixtures<ol><li><a href="#fixture-functions">Fixture Functions</a></li><li><a href="#managing-resources">Managing Resources</a></li><li><a href="#providing-fixtures-to-tests">Providing Fixtures to Tests</a></li><li><a href="#multiple-parameterized-test-execution">Multiple Parameterized Test Execution</a></li></ol></li><li class="collapsible"><input type="checkbox"><a href="writing-assertions.html">Writing Assertions</a><ol><li><a href="writing-assertions.html#custom-assertion-functions">Custom Assertion Functions</a></li><li><a href="writing-assertions.html#a-comprehensive-example">A Comprehensive Example</a></li><li><a href="writing-assertions.html#please-contribute">Please Contribute!</a></li></ol></li></ol></nav><article><h2 id="test-fixtures">Test Fixtures</h2><p>A test's "fixture" is the initial state of the system under test. Setting this up is usually repetitive drudgery and may often constitute the majority of the work when writing your tests. It's therefore desirable to centralize this work in a fixture setup function. Tests using the same fixture can then be grouped together and obtain their fixture from this common setup function.</p><p>You may also need to clean up, or "teardown", your test fixture after testing. Since PHP is garbage collected this is usually unnecessary, but if you're working with external resources -- opening a file handle, setting a global configuration variable, etc. -- you need to do some clean up.</p><p>Fixture can be managed at different levels of "granularity". Most of the time you want to recreate it from scratch for each test. This is to ensure, as much as possible, the outcome of each test depends only on its fixture and not on other tests or external phenomena, a concept often called "test isolation". In practice, creating entirely new fixture for each test isn't always possible or even, at times, desirable. In these cases, we want to be able to manage fixture that is shared among several tests.</p><h3 id="fixture-functions">Fixture Functions</h3><p>EasyTest offers a number of functions to manage your test fixtures. This is perhaps most clearly laid out with an example:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_fixtures/setup.php</span>
+
+<span class="k">namespace</span> <span class="nx">directory</span><span class="p">;</span>
+
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="no">__FILE__</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="no">__FILE__</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_fixtures/test.php</span>
+
+<span class="k">namespace</span> <span class="nb">file</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\fail</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">easytest\Context</span><span class="p">;</span>
+
+
+<span class="k">function</span> <span class="nf">setup_file</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="no">__FILE__</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown_file</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="no">__FILE__</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="no">__FUNCTION__</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="no">__FUNCTION__</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">teardown</span><span class="p">(</span><span class="k">function</span><span class="p">()</span> <span class="p">{</span> <span class="k">echo</span> <span class="no">__FUNCTION__</span><span class="p">;</span> <span class="p">});</span>
+    <span class="nx">fail</span><span class="p">(</span><span class="s1">&#39;Execution stops here.&#39;</span><span class="p">);</span>
+    <span class="k">echo</span> <span class="no">__FUNCTION__</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_two</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="no">__FUNCTION__</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">Test</span> <span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="fm">__construct</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="no">__METHOD__</span><span class="p">;</span>
+    <span class="p">}</span>
+
+
+    <span class="k">function</span> <span class="nf">setup_object</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="no">__METHOD__</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">teardown_object</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="no">__METHOD__</span><span class="p">;</span>
+    <span class="p">}</span>
+
+
+    <span class="k">function</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="no">__METHOD__</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">teardown</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="no">__METHOD__</span><span class="p">;</span>
+    <span class="p">}</span>
+
+
+    <span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">teardown</span><span class="p">(</span><span class="k">function</span><span class="p">()</span> <span class="p">{</span> <span class="k">echo</span> <span class="no">__FUNCTION__</span><span class="p">;</span> <span class="p">});</span>
+        <span class="nx">fail</span><span class="p">(</span><span class="s1">&#39;Execution stops here.&#39;</span><span class="p">);</span>
+        <span class="k">echo</span> <span class="no">__METHOD__</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">test_two</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="no">__METHOD__</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Running EasyTest shows the order and frequency with which everything happens:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>easytest --verbose
+
+<span class="go">OOOFOOOOO.OOOFOOOOO.OOO</span>
+
+
+<span class="go">OUTPUT: directory\setup</span>
+<span class="go">test_fixtures/setup.php</span>
+
+
+
+<span class="go">OUTPUT: file\setup_file</span>
+<span class="go">test_fixtures/test.php</span>
+
+
+
+<span class="go">OUTPUT: setup for file\test_one</span>
+<span class="go">file\setup</span>
+
+
+
+<span class="go">FAILED: file\test_one</span>
+<span class="go">Execution stops here.</span>
+
+<span class="go">in test_fixtures/test.php on line 30</span>
+
+
+
+<span class="go">OUTPUT: file\test_one</span>
+<span class="go">file\{closure}</span>
+
+
+
+<span class="go">OUTPUT: teardown for file\test_one</span>
+<span class="go">file\teardown</span>
+
+
+
+<span class="go">OUTPUT: setup for file\test_two</span>
+<span class="go">file\setup</span>
+
+
+
+<span class="go">OUTPUT: file\test_two</span>
+<span class="go">file\test_two</span>
+
+
+
+<span class="go">OUTPUT: teardown for file\test_two</span>
+<span class="go">file\teardown</span>
+
+
+
+<span class="go">OUTPUT: file\Test</span>
+<span class="go">file\Test::__construct</span>
+
+
+
+<span class="go">OUTPUT: file\Test::setup_object</span>
+<span class="go">file\Test::setup_object</span>
+
+
+
+<span class="go">OUTPUT: setup for file\Test::test_one</span>
+<span class="go">file\Test::setup</span>
+
+
+
+<span class="go">FAILED: file\Test::test_one</span>
+<span class="go">Execution stops here.</span>
+
+<span class="go">in test_fixtures/test.php on line 65</span>
+
+
+
+<span class="go">OUTPUT: file\Test::test_one</span>
+<span class="go">file\{closure}</span>
+
+
+
+<span class="go">OUTPUT: teardown for file\Test::test_one</span>
+<span class="go">file\Test::teardown</span>
+
+
+
+<span class="go">OUTPUT: setup for file\Test::test_two</span>
+<span class="go">file\Test::setup</span>
+
+
+
+<span class="go">OUTPUT: file\Test::test_two</span>
+<span class="go">file\Test::test_two</span>
+
+
+
+<span class="go">OUTPUT: teardown for file\Test::test_two</span>
+<span class="go">file\Test::teardown</span>
+
+
+
+<span class="go">OUTPUT: file\Test::teardown_object</span>
+<span class="go">file\Test::teardown_object</span>
+
+
+
+<span class="go">OUTPUT: file\teardown_file</span>
+<span class="go">test_fixtures/test.php</span>
+
+
+
+<span class="go">OUTPUT: directory\teardown</span>
+<span class="go">test_fixtures/setup.php</span>
+
+
+
+<span class="go">Seconds elapsed: 0.001</span>
+<span class="go">Memory used: 1.253 MB</span>
+<span class="go">Passed: 2, Failed: 2, Output: 19</span>
+</code></pre></div>
+<p>As you can see, execution of a test stops when an assertion fails or on any error. Teardown functions run regardless of whether or not a test completes. Teardown functions are only skipped if a corresponding setup function does not complete. This could happen because of an error in the setup function or because <code>easytest\skip</code> was called. If a setup function does not complete, the item being setup (function, class, file, etc.) is skipped.</p><p>Of note is the <code>setup.php</code> file, which sets up and tears down a directory of tests. Whenever EasyTest enters a new directory, it looks for this file and, if found, includes it before any others. It then searches this file for directory setup and teardown functions. If either of these functions are found, <code>setup</code> is run before continuing to discover the directory and <code>teardown</code> is run just prior to ascending out of the directory. This file may also include definitions needed for the tests in the current directory and need not even define directory fixture functions at all.</p><p>EasyTest matches fixture functions without regards to case and matches on both CamelCase and snake_case. Fixture functions are recognized if their name begins with the names shown in the example above. Fixture method names must match exactly, e.g., an object setup method needs to be a case-insensitive match to either <code>setup_obect</code> or <code>SetupObject</code>. If multiple setup and/or teardown functions are ever found, an error is reported and the associated item is skipped.</p><h3 id="managing-resources">Managing Resources</h3><p>One of the most straightforward uses of fixture functions is to manage and cleanup resources that may persist beyond the lifetime of a test.</p><p>As a basic example, consider a situation where you'd like to test a function's output using PHP's output buffering:</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_buffering</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nb">ob_start</span><span class="p">();</span>
+    <span class="nx">produce_output</span><span class="p">();</span>
+    <span class="nx">easytest\assert_identical</span><span class="p">(</span><span class="s1">&#39;Expected output&#39;</span><span class="p">,</span> <span class="nb">ob_get_contents</span><span class="p">());</span>
+    <span class="nb">ob_end_clean</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If the assertion fails, the output buffer is never deleted. Even if you use <code>ob_get_clean</code> to delete the buffer as you get its contents, this does not guard against errors during the call to <code>produce_output</code>.</p><p>If this is the only test using an output buffer, we can ensure the buffer is deleted by using a test-specific teardown function:</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_buffering</span><span class="p">(</span><span class="nx">easytest\Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nb">ob_start</span><span class="p">();</span>
+    <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">teardown</span><span class="p">(</span><span class="s1">&#39;ob_end_clean&#39;</span><span class="p">);</span>
+    <span class="nx">produce_output</span><span class="p">();</span>
+    <span class="nx">easytest\assert_identical</span><span class="p">(</span><span class="s1">&#39;Expected output&#39;</span><span class="p">,</span> <span class="nb">ob_get_contents</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If an output buffer is needed by multiple tests, we can move management of the buffer into separate setup and teardown functions:</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nb">ob_start</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nb">ob_end_clean</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_buffering</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">produce_output</span><span class="p">();</span>
+    <span class="nx">easytest\assert_identical</span><span class="p">(</span><span class="s1">&#39;Expected output&#39;</span><span class="p">,</span> <span class="nb">ob_get_contents</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="providing-fixtures-to-tests">Providing Fixtures to Tests</h3><p>You may have noticed that EasyTest's fixture functions form a natural hierarchy with directories at the top and individual tests at the bottom. Setup functions higher in the hierarchy can pass state to setup functions and/or tests lower in the hierarchy by returning an array of arguments. As EasyTest performs discovery, these arguments are unpacked and automatically passed to subordinate fixture functions, class constructors, and test functions, which accept them by adding parameters to their signature.</p><p>Subordinate setup functions "intercept" state from higher setup functions. Whatever these functions return replaces whatever arguments are passed to it. This is true regardless of whether or not a function explicitly accepts the arguments provided to it. Functions may add to, remove from, alter or simply pass through the arguments they receive. If a setup function is not defined at a particular level in the hierarchy, arguments are passed directly to the next subordinate setup function, test function or test class.</p><p>Arguments are also passed to teardown functions, but these functions never return arguments, they only clean up the arguments given to them.</p><p>Let's consider an example where we wish to share a common database connection among a directory of tests:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// setup.php</span>
+
+<span class="k">namespace</span> <span class="nx">test\database</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$database</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Database</span><span class="p">();</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">createDatabase</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$database</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">deleteDatabase</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>In one of our test files, we might have the following:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test.php</span>
+
+<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">TestDatabase</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="nv">$database</span><span class="p">;</span>
+
+    <span class="k">function</span> <span class="fm">__construct</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span> <span class="o">=</span> <span class="nv">$database</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">reset</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">testInsertRecord</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">insertRecord</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]);</span>
+        <span class="nx">assert_identical</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">testDeleteRecord</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$id</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">insertRecord</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]);</span>
+        <span class="nx">assert_identical</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">deleteRecord</span><span class="p">(</span><span class="nv">$id</span><span class="p">);</span>
+        <span class="nx">assert_identical</span><span class="p">([],</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>In the above example, since there is no file setup function, the arguments returned from <code>test\database\setup</code> are provided to <code>TestDatabaseActions</code>. Once passed to a constructor, the test fixture is directly accessible from the test object's shared state. Consequently, object fixture methods never return or receive parameters. However, you could also write your test using functions:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test.php</span>
+
+<span class="k">namespace</span> <span class="nx">test\database\actions</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">reset</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$database</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_insert_record</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">insertRecord</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]);</span>
+    <span class="nx">assert_identical</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_delete_record</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$id</span> <span class="o">=</span> <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">insertRecord</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]);</span>
+    <span class="nx">assert_identical</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">deleteRecord</span><span class="p">(</span><span class="nv">$id</span><span class="p">);</span>
+    <span class="nx">assert_identical</span><span class="p">([],</span> <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>In the above example, the arguments returned from <code>test\database\setup</code> are provided to <code>test\database\actions\setup</code>, which in turn returns arguments that are provided to each test. If more setup or teardown is needed, you can add the necessary functions and they will receive the arguments:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test.php</span>
+
+<span class="k">namespace</span> <span class="nx">test\database\actions</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+
+
+<span class="k">function</span> <span class="nf">setup_file</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">loadTestData</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$database</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown_file</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">clearTestData</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">reset</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$database</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_insert_record</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">insertRecord</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]);</span>
+    <span class="nx">assert_identical</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_delete_record</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$id</span> <span class="o">=</span> <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">insertRecord</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]);</span>
+    <span class="nx">assert_identical</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">deleteRecord</span><span class="p">(</span><span class="nv">$id</span><span class="p">);</span>
+    <span class="nx">assert_identical</span><span class="p">([],</span> <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>You could do the same thing if you organized your tests in a class, but in this case, it might make more sense to use object fixture methods:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test.php</span>
+
+<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">TestDatabase</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="nv">$database</span><span class="p">;</span>
+
+    <span class="k">function</span> <span class="fm">__construct</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span> <span class="o">=</span> <span class="nv">$database</span><span class="p">;</span>
+    <span class="p">}</span>
+
+
+    <span class="k">function</span> <span class="nf">setupObject</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">loadTestData</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">teardownObject</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">clearTestData</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">reset</span><span class="p">();</span>
+    <span class="p">}</span>
+
+
+    <span class="k">function</span> <span class="nf">testInsertRecord</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">insertRecord</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]);</span>
+        <span class="nx">assert_identical</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">testDeleteRecord</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$id</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">insertRecord</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]);</span>
+        <span class="nx">assert_identical</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">deleteRecord</span><span class="p">(</span><span class="nv">$id</span><span class="p">);</span>
+        <span class="nx">assert_identical</span><span class="p">([],</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">database</span><span class="o">-&gt;</span><span class="na">records</span><span class="p">());</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>In the above examples, notice that a setup function's return value replaces whatever arguments may have existed before it. If you define a setup function, it <b>MUST</b> accept and pass on the arguments it receives if those arguments are needed at lower levels.</p><p>Let's expand on the database example:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_orders.php</span>
+
+<span class="k">namespace</span> <span class="nx">test\database\orders</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_true</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\OrderManager</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\PaymentProcessor</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup_file</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$processor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PaymentProcessor</span><span class="p">();</span>
+    <span class="nv">$processor</span><span class="o">-&gt;</span><span class="na">setTestMode</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$processor</span><span class="p">];</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">,</span> <span class="nx">PaymentProcessor</span> <span class="nv">$processor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="k">new</span> <span class="nx">OrderManager</span><span class="p">(</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor</span><span class="p">)];</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">test</span><span class="p">(</span><span class="nx">OrderManager</span> <span class="nv">$order</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$order</span><span class="o">-&gt;</span><span class="na">placeOrder</span><span class="p">();</span>
+    <span class="nx">assert_true</span><span class="p">(</span><span class="nv">$order</span><span class="o">-&gt;</span><span class="na">wasPlaced</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The above example results in an error because <code>test\database\orders\setup_file</code> removes the <code>Database</code> argument provided by <code>test\database\setup</code> which is needed by <code>test\database\orders\setup</code>. A fixed example:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_orders.php</span>
+
+<span class="k">namespace</span> <span class="nx">test\database\orders</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_true</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\OrderManager</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\PaymentProcessor</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup_file</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">loadTestData</span><span class="p">();</span>
+
+    <span class="nv">$processor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PaymentProcessor</span><span class="p">();</span>
+    <span class="nv">$processor</span><span class="o">-&gt;</span><span class="na">setTestMode</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown_file</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">,</span> <span class="nx">PaymentProcessor</span> <span class="nv">$processor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">clearTestData</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">,</span> <span class="nx">PaymentProcessor</span> <span class="nv">$processor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">reset</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="k">new</span> <span class="nx">OrderManager</span><span class="p">(</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor</span><span class="p">)];</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">test</span><span class="p">(</span><span class="nx">OrderManager</span> <span class="nv">$order</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$order</span><span class="o">-&gt;</span><span class="na">placeOrder</span><span class="p">();</span>
+    <span class="nx">assert_true</span><span class="p">(</span><span class="nv">$order</span><span class="o">-&gt;</span><span class="na">wasPlaced</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>In both of the above examples, <code>test\database\orders\setup</code> uses the <code>Database</code> and <code>PaymentProcessor</code> arguments it receives to instantiate and return an <code>OrderManager</code>. The returned <code>OrderManager</code> replaces the <code>Database</code> and <code>PaymentProcessor</code> arguments and is provided to each test.</p><h3 id="multiple-parameterized-test-execution">Multiple Parameterized Test Execution</h3><p>Continuing with the previous example, let's assume we want to support multiple database and payment processor backends. Client code (in our example, <code>OrderManager</code>) should function identically regardless of the backend. To ensure this, we'd like to run the same tests against the various database and payment processor backends we support.</p><p>EasyTest supports this by providing a pair of fixture functions not previously mentioned: <code>setup_runs</code> and <code>teardown_runs</code>. These functions may be defined in a test file and/or in a test directory's <code>setup.php</code>. <code>setup_runs</code> should return an iterable of arrays, and EasyTest will run subordinate tests once with each array of arguments. In the hierarchy of fixture functions, <code>setup_runs</code> is run <em>before</em> file and directory setup functions and <code>teardown_runs</code> is run <em>after</em> file and directory teardown functions, meaning that directory and file fixture functions are run once for each set of arguments returned by <code>setup_runs</code>.</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// setup.php</span>
+
+<span class="k">namespace</span> <span class="nx">test\database</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">example\DatabaseX</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\DatabaseY</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup_runs</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$db1</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">DatabaseX</span><span class="p">();</span>
+    <span class="nv">$db1</span><span class="o">-&gt;</span><span class="na">createDatabase</span><span class="p">();</span>
+
+    <span class="nv">$db2</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">DatabaseY</span><span class="p">();</span>
+    <span class="nv">$db2</span><span class="o">-&gt;</span><span class="na">createDatabase</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="s1">&#39;database x&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$db1</span><span class="p">],</span>
+        <span class="s1">&#39;database y&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$db2</span><span class="p">],</span>
+    <span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown_runs</span><span class="p">(</span><span class="k">array</span> <span class="nv">$args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$args</span><span class="p">[</span><span class="s1">&#39;database x&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">-&gt;</span><span class="na">deleteDatabase</span><span class="p">();</span>
+    <span class="nv">$args</span><span class="p">[</span><span class="s1">&#39;database y&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">-&gt;</span><span class="na">deleteDatabase</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_orders.php</span>
+
+<span class="k">namespace</span> <span class="nx">test\database\orders</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_true</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\OrderManager</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\PaymentProcessor</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\PaymentProcessorA</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\PaymentProcessorB</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup_runs</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">loadTestData</span><span class="p">();</span>
+
+    <span class="nv">$processor1</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PaymentProcessorA</span><span class="p">();</span>
+    <span class="nv">$processor1</span><span class="o">-&gt;</span><span class="na">setTestMode</span><span class="p">();</span>
+
+    <span class="nv">$processor2</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PaymentProcessorB</span><span class="p">();</span>
+    <span class="nv">$processor2</span><span class="o">-&gt;</span><span class="na">setTestMode</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="s1">&#39;processor a&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor1</span><span class="p">],</span>
+        <span class="s1">&#39;processor b&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor2</span><span class="p">],</span>
+    <span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown_runs</span><span class="p">(</span><span class="k">array</span> <span class="nv">$args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// both payment processors use the same database, so only clear it out once</span>
+    <span class="nv">$database</span> <span class="o">=</span> <span class="nv">$args</span><span class="p">[</span><span class="s1">&#39;processor a&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">clearTestData</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">,</span> <span class="nx">PaymentProcessor</span> <span class="nv">$processor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">reset</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="k">new</span> <span class="nx">OrderManager</span><span class="p">(</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor</span><span class="p">)];</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">test</span><span class="p">(</span><span class="nx">OrderManager</span> <span class="nv">$order</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$order</span><span class="o">-&gt;</span><span class="na">placeOrder</span><span class="p">();</span>
+    <span class="nx">assert_true</span><span class="p">(</span><span class="nv">$order</span><span class="o">-&gt;</span><span class="na">wasPlaced</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>test</code> is now run four times using every combination of database and payment processor. If an error or failure occurs, the failed run is identified using the keys of the iterable return by <code>setup_runs</code>. In this example, a failure of <code>test</code> might be identified as:</p><div class="highlight"><pre><span></span><code><span class="go">FAILED: test (database x, processor b)</span>
+</code></pre></div>
+<p>Unlike other teardown fixture functions, EasyTest does not unpack the iterable returned by <code>setup_runs</code> when calling <code>teardown_runs</code>. This is because EasyTest only traverses the iterator once, thus supporting the use of generators and other non-rewindable iterators. This might be desirable if the setup for each run is costly in terms of resources.</p><p>In the following example, generators are used so that only one database and one payment processor are created at a time. Because <code>teardown_runs</code> would received an expended generator, directory and file fixtures are used to setup and teardown the resources used for each run.</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// setup.php</span>
+
+<span class="k">namespace</span> <span class="nx">test\database</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\DatabaseX</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\DatabaseY</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup_runs</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$db</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">DatabaseX</span><span class="p">();</span>
+    <span class="k">yield</span> <span class="s1">&#39;database x&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$db</span><span class="p">];</span>
+
+    <span class="nv">$db</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">DatabaseY</span><span class="p">();</span>
+    <span class="k">yield</span> <span class="s1">&#39;database y&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$db</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$db</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$db</span><span class="o">-&gt;</span><span class="na">createDatabase</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$db</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$db</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$db</span><span class="o">-&gt;</span><span class="na">deleteDatabase</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_orders.php</span>
+
+<span class="k">namespace</span> <span class="nx">test\database\orders</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_true</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\Database</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\OrderManager</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\PaymentProcessor</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\PaymentProcessorA</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\PaymentProcessorB</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup_runs</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$processor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PaymentProcessorA</span><span class="p">();</span>
+    <span class="k">yield</span> <span class="s1">&#39;processor a&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor</span><span class="p">];</span>
+
+    <span class="nv">$processor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PaymentProcessorB</span><span class="p">();</span>
+    <span class="k">yield</span> <span class="s1">&#39;processor b&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor</span><span class="p">];</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">setup_file</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">,</span> <span class="nx">PaymentProcessor</span> <span class="nv">$processor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">loadTestData</span><span class="p">();</span>
+    <span class="nv">$processor</span><span class="o">-&gt;</span><span class="na">setTestMode</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">teardown_file</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">,</span> <span class="nx">PaymentProcessor</span> <span class="nv">$processor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">clearTestData</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">setup</span><span class="p">(</span><span class="nx">Database</span> <span class="nv">$database</span><span class="p">,</span> <span class="nx">PaymentProcessor</span> <span class="nv">$processor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$database</span><span class="o">-&gt;</span><span class="na">reset</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">[</span><span class="k">new</span> <span class="nx">OrderManager</span><span class="p">(</span><span class="nv">$database</span><span class="p">,</span> <span class="nv">$processor</span><span class="p">)];</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">test</span><span class="p">(</span><span class="nx">OrderManager</span> <span class="nv">$order</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$order</span><span class="o">-&gt;</span><span class="na">placeOrder</span><span class="p">();</span>
+    <span class="nx">assert_true</span><span class="p">(</span><span class="nv">$order</span><span class="o">-&gt;</span><span class="na">wasPlaced</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+</article></main><footer><p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by/4.0/80x15.png"></a><br>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</p><p>Please open an issue if you find an error in these pages. Fixes are also welcome!</p></footer></body></html>

@@ -12,13 +12,13 @@ In addition to this wiki, you may also want to consult the
 
 # Contents
 
-1. [Getting Started](https://github.com/gnarlyquack/easytest/wiki/1.-Getting-Started)
+1. [Getting Started](@getting-started)
    will get you up and running with EasyTest.
-2. [Writing Tests](https://github.com/gnarlyquack/easytest/wiki/2.-Writing-Tests)
+2. [Writing Tests](@writing-tests)
    tells you everything you need to know about writing tests.
-3. [Test Fixtures](https://github.com/gnarlyquack/easytest/wiki/3.-Test-Fixtures)
+3. [Test Fixtures](@test-fixtures)
    explains how EasyTest lets you to manage your tests' state.
-4. [Writing Assertions](https://github.com/gnarlyquack/easytest/wiki/4.-Writing-Assertions)
+4. [Writing Assertions](@writing-assertions)
    provides a comprehensive example on how to implement your own assertion if
    EasyTest doesn't provide the assertion you want and/or using PHP's `assert`
    is impractical.
