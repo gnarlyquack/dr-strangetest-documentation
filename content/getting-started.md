@@ -3,95 +3,48 @@
 
 ## Requirements
 
-EasyTest supports PHP versions 5.3 through 7.4.
+Dr. Strangetest supports PHP versions 5.3 through 8.0.
 
-For PHP 7, 'zend.assertions' must NOT be in production mode.
+For PHP 7 or later, `zend.assertions` must NOT be in production mode.
 
 
 ## Installation
 
 ### Phar (PHP Archive)
 
-The recommended way to use EasyTest is to [download a
-Phar](https://github.com/gnarlyquack/easytest/releases/latest/download/easytest.phar).
-Place the Phar in the root directory of your project. Run EasyTest as follows:
+Dr. Strangetest is [available as a
+Phar](https://github.com/gnarlyquack/dr-strangetest/releases/latest/download/strangetest.phar).
+PHP must have the Phar extension enabled. `phar.readonly` and
+`phar.require_hash` can be set to their default value of `"1"`.
 
-    php easytest.phar
+Place the Phar in your project's root directory and run it as follows:
+
+    $ php strangetest.phar
 
 If you make the Phar executable you can run it directly:
 
-    ./easytest.phar
-
-Note that PHP must have the Phar extension enabled.
+    $ ./strangetest.phar
 
 
 ### Composer
 
-Install EasyTest using Composer:
+Install Dr. Strangetest using Composer:
 
-    composer require --dev easytest/easytest
+    composer require --dev gnarlyquack/dr-strangetest
 
-Composer installs the `easytest` executable in its `bin-dir`, which defaults
-to `vendor/bin`. Assuming the default `bin-dir`, run EasyTest as follows:
+Composer installs the `strangetest` executable in its `bin-dir`, which defaults
+to `vendor/bin`. Assuming the default `bin-dir`, run Dr. Strangetest as follows:
 
-    ./vendor/bin/easytest
-
-
-From hereon, references to `easytest` refer to the location of the executable.
+    $ ./vendor/bin/strangetest
 
 
-## Running Tests
+## Verifying Installation
 
-Run EasyTest on the command line:
+If all went well, you now have Dr. Strangetet's executable somewhere in your
+project path. From hereon, references to `strangetest` refer to the location of
+this executable.
 
-    $ easytest
+You can verify installation succeeded by trying to run the executable:
 
-By default, EasyTest searches the current directory for tests. Typically you
-would run EasyTest from your project's root directory and place your tests in
-a file or directory in that directory. If you use Composer, EasyTest also
-tries to load Composer's autoloader so your project is automatically visible
-to your test suite.
-
-You can run individual tests or a subset of tests by invoking EasyTest with
-one or more paths to directories or files in your test suite.
-
-This tests the `test_subdir` directory and `test_foo.php` file in the `tests`
-directory:
-
-    easytest tests/test_subdir tests/test_foo.php
-
-To run specific tests within a file, use test specifiers. Function specifiers
-let you test individual functions while class specifiers let you test
-individual classes and methods.
-
-This tests two functions, `test_one` and `test_two`, in the file
-`test_foo.php`:
-
-    easytest tests/test_foo.php --function=test_one,test_one
-
-Note that function names should be fully qualified.
-
-This tests two classes, `TestFoo` and `TestBar`, in the file `test_foo.php`:
-
-    easytest tests/test_foo.php --class=TestFoo,TestBar
-
-Note that class names should be fully qualified.
-
-Methods can also be specified. This tests two methods, `testOne` and
-`testTwo`, in class `TestFoo` in the file `test_foo.php`:
-
-    easytest tests/test_foo.php --class=TestFoo::testOne,testTwo
-
-Note that, if multiple classes are listed, method specifiers are associated
-only with the last class in the list. So this tests class `TestFoo` and two
-methods in class `TestBar`:
-
-    easytest tests/test_foo.php --class=TestFoo,TestBar::testOne,testTwo
-
-To specify methods in multiple classes, use multiple class specifiers:
-
-    easytest tests/test_foo.php --class=TestFoo::testOne,testTwo --class=TestBar::testOne,testTwo
-
-You can, of course, specify multiple paths with muliple specifiers for each:
-
-    easytest tests/test_foo.php --function=test_one,test_two --class=TestFoo::testOne,testTwo tests/test_bar.php --class=TestBar --function=test_three,test_four
+    $ strangetest --version
+    Dr. Strangetest x.y.z
