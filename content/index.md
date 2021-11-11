@@ -1,39 +1,33 @@
 # Don't Worry!
 
-Let's test the code:
+Let's test the code.
 
-1.  **Get Dr. Strangetest.** [Downloading the Phar](https://github.com/gnarlyquack/easytest/releases/latest/download/easytest.phar)
+1.  **Get Dr. Strangetest.** [Downloading the
+    Phar](https://github.com/gnarlyquack/easytest/releases/latest/download/easytest.phar)
     is probably easiest.
 
-2.  **Write our tests.** As long as the name begins with `test`, Dr.
-    Strangetest will find it. So we might put tests for [this code](@sample-code)
-    in a file named `test_email.php` in a directory named `tests`:
+2.  **Write your tests.** As long as the name begins with `test`, Dr.
+    Strangetest will find it. So you might put tests for [this
+    code](@sample-code) in a file named `test_email.php` in a directory named
+    `tests`:
 
     ```php
     <?php declare(strict_types=1);
 
     use example\Email;
-    use function strangetest\assert_equal;
     use function strangetest\assert_throws;
 
-    function test_email_can_be_created_from_valid_address(): void
+    function test_valid_email(): void
     {
-        assert(Email::from_string('user@example.com') instanceof Email);
+        $email = new Email('user@example.com');
+        assert('user@example.com' == $email);
     }
 
-    function test_email_cannot_be_created_from_invalid_address(): void
+    function test_invalid_email(): void
     {
         assert_throws(
             InvalidArgumentException::class,
-            function() { Email::from_string('invalid'); }
-        );
-    }
-
-    function test_email_can_be_used_as_a_string(): void
-    {
-        assert_equal(
-            'user@example.com',
-            Email::from_string('user@example.com')
+            function() { new Email('invalid'); }
         );
     }
     ```
@@ -44,12 +38,12 @@ Let's test the code:
     $ php strangetest.phar
     Dr. Strangetest
 
-    ...
+    ..
 
 
     Seconds elapsed: 0.004
-    Memory used: 1.844 MB
-    Passed: 3
+    Memory used: 1.27 MB
+    Passed: 2
     ```
 
     Dr. Strangetest automatically looks for and includes Composer's

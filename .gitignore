@@ -1,2 +1,8 @@
+# php
+composer.lock
+vendor/
+
+
+# python
 /venv/
 __pycache__/

@@ -1,8 +1,3 @@
-Here's some sample code you might want to test.
-
-In `src/Email.php`:
-
-```php
 <?php declare(strict_types=1);
 
 namespace example;
@@ -27,25 +22,3 @@ final class Email
         return $this->email;
     }
 }
-```
-
-If using Composer, you can autoload the code by putting something like the
-following in `composer.json`:
-
-```json
-{
-    "autoload": {
-        "classmap": [
-            "src/"
-        ]
-    }
-}
-```
-
-Then create the autoloader:
-
-```shell
-$ composer install
-```
-
-With this done, you can [test the code](@.).

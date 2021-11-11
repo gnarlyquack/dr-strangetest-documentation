@@ -1,42 +1,29 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;family=Nunito:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"><title>Dr. Strangetest, a PHP testing framework</title></head><body><header><h1>Dr. Strangetest</h1><p id="subtitle">Or: How I Learned To Stop Worrying And Test The Code</p><p id="tagline">A testing framework for PHP</p><nav><ul id="navbar"><li><a href=".">Home</a></li><li><a href="documentation.html">Documentation</a></li><li><a href="contributing.html">Contributing</a></li></ul></nav></header><main><article><p>Here's some sample code that we might want to test.</p><p>In <code>src/Email.php</code>:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span> <span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;family=Nunito:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"><title>Dr. Strangetest, a PHP testing framework</title></head><body><header><h1>Dr. Strangetest</h1><p id="subtitle">Or: How I Learned To Stop Worrying And Test The Code</p><p id="tagline">A testing framework for PHP</p><nav><ul id="navbar"><li><a href=".">Home</a></li><li><a href="documentation.html">Documentation</a></li><li><a href="contributing.html">Contributing</a></li></ul></nav></header><main><article><p>Here's some sample code you might want to test.</p><p>In <code>src/Email.php</code>:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span> <span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
 
 <span class="k">namespace</span> <span class="nx">example</span><span class="p">;</span>
 
 <span class="k">final</span> <span class="k">class</span> <span class="nc">Email</span>
 <span class="p">{</span>
-    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">from_string</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$email</span><span class="p">)</span><span class="o">:</span> <span class="nx">self</span>
+    <span class="k">private</span> <span class="nv">$email</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="fm">__construct</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$email</span><span class="p">)</span>
     <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="na">is_valid_email</span><span class="p">(</span><span class="nv">$email</span><span class="p">))</span>
-        <span class="p">{</span>
-            <span class="k">return</span> <span class="k">new</span> <span class="nx">self</span><span class="p">(</span><span class="nv">$email</span><span class="p">);</span>
-        <span class="p">}</span>
-        <span class="k">else</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">false</span> <span class="o">===</span> <span class="nx">\filter_var</span><span class="p">(</span><span class="nv">$email</span><span class="p">,</span> <span class="nx">\FILTER_VALIDATE_EMAIL</span><span class="p">))</span>
         <span class="p">{</span>
             <span class="k">throw</span> <span class="k">new</span> <span class="nx">\InvalidArgumentException</span><span class="p">(</span>
                 <span class="nx">\sprintf</span><span class="p">(</span><span class="s1">&#39;&quot;%s&quot; is not a valid email address&#39;</span><span class="p">,</span> <span class="nv">$email</span><span class="p">)</span>
             <span class="p">);</span>
         <span class="p">}</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">email</span> <span class="o">=</span> <span class="nv">$email</span><span class="p">;</span>
     <span class="p">}</span>
 
     <span class="k">public</span> <span class="k">function</span> <span class="fm">__toString</span><span class="p">()</span><span class="o">:</span> <span class="nx">string</span>
     <span class="p">{</span>
         <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">email</span><span class="p">;</span>
     <span class="p">}</span>
-
-    <span class="k">private</span> <span class="nv">$email</span><span class="p">;</span>
-
-    <span class="k">private</span> <span class="k">function</span> <span class="fm">__construct</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$email</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">email</span> <span class="o">=</span> <span class="nv">$email</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="k">private</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">is_valid_email</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$email</span><span class="p">)</span><span class="o">:</span> <span class="nx">bool</span>
-    <span class="p">{</span>
-        <span class="k">return</span> <span class="k">false</span> <span class="o">!==</span> <span class="nx">\filter_var</span><span class="p">(</span><span class="nv">$email</span><span class="p">,</span> <span class="nx">\FILTER_VALIDATE_EMAIL</span><span class="p">);</span>
-    <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>If we're using Composer, we can autoload the code by putting something like the following in <code>composer.json</code>:</p><div class="highlight"><pre><span></span><code><span class="p">{</span>
+<p>If using Composer, you can autoload the code by putting something like the following in <code>composer.json</code>:</p><div class="highlight"><pre><span></span><code><span class="p">{</span>
     <span class="nt">&quot;autoload&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="nt">&quot;classmap&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="s2">&quot;src/&quot;</span>
@@ -46,4 +33,4 @@
 </code></pre></div>
 <p>Then create the autoloader:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>composer install
 </code></pre></div>
-<p>With this done, we can <a href=".">test the code</a>.</p></article></main><footer><p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by/4.0/80x15.png"></a><br>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</p><p>Please open an issue if you find an error in these pages. Fixes are also welcome!</p></footer></body></html>
+<p>With this done, you can <a href=".">test the code</a>.</p></article></main><footer><p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by/4.0/80x15.png"></a><br>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</p><p>Please open an issue if you find an error in these pages. Fixes are also welcome!</p></footer></body></html>
