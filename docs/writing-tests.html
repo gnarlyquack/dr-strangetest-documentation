@@ -1,152 +1,188 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;family=Nunito:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"><title>Dr. Strangetest, a PHP testing framework</title></head><body><header><h1>Dr. Strangetest</h1><p id="subtitle">Or: How I Learned To Stop Worrying And Test The Code</p><p id="tagline">A testing framework for PHP</p><nav><ul id="navbar"><li><a href=".">Home</a></li><li><a href="documentation.html" class="active">Documentation</a></li><li><a href="contributing.html">Contributing</a></li></ul></nav></header><main><nav id="doc-toc"><ol><li class="collapsible"><input type="checkbox"><a href="getting-started.html">Getting Started</a><ol><li><a href="getting-started.html#requirements">Requirements</a></li><li class="collapsible"><input type="checkbox"><a href="getting-started.html#installation">Installation</a><ol><li><a href="getting-started.html#phar-php-archive">Phar (PHP Archive)</a></li><li><a href="getting-started.html#composer">Composer</a></li></ol></li><li><a href="getting-started.html#verifying-installation">Verifying Installation</a></li></ol></li><li class="collapsible"><input type="checkbox" checked>Writing Tests<ol><li><a href="#what-is-a-test">What is a Test?</a></li><li><a href="#making-assertions">Making Assertions</a></li><li><a href="#testing-exceptions-and-errors">Testing Exceptions and Errors</a></li><li><a href="#skipping-tests">Skipping Tests</a></li><li><a href="#subtests">Subtests</a></li><li><a href="#test-dependencies">Test Dependencies</a></li></ol></li><li class="collapsible"><input type="checkbox"><a href="test-fixtures.html">Test Fixtures</a><ol><li><a href="test-fixtures.html#fixture-functions">Fixture Functions</a></li><li><a href="test-fixtures.html#managing-resources">Managing Resources</a></li><li><a href="test-fixtures.html#providing-fixtures-to-tests">Providing Fixtures to Tests</a></li><li><a href="test-fixtures.html#multiple-parameterized-test-execution">Multiple Parameterized Test Execution</a></li></ol></li><li class="collapsible"><input type="checkbox"><a href="writing-assertions.html">Writing Assertions</a><ol><li><a href="writing-assertions.html#custom-assertion-functions">Custom Assertion Functions</a></li><li><a href="writing-assertions.html#a-comprehensive-example">A Comprehensive Example</a></li><li><a href="writing-assertions.html#please-contribute">Please Contribute!</a></li></ol></li></ol></nav><article><h2 id="writing-tests">Writing Tests</h2><h3 id="what-is-a-test">What is a Test?</h3><p>EasyTest automatically discovers your tests using the following rules:</p><ul><li><p>A <b>test</b> is a function or method whose name begins with <code>test</code>. When such a function or method is found, it is run.</p></li><li><p>Test methods are organized into test classes, which is any class whose name begins with <code>test</code>. When such a class is found, an instance of it is instantiated and it is searched for test methods.</p></li><li><p>Test functions and test classes are organized into test files, which is any PHP source file whose name begins with <code>test</code> and has file extension <code>.php</code>. When such a file is found, it is included and searched for test functions and test classes. A test file may contain any combination of test functions and/or test classes.</p></li><li><p>Test files may be organized into test directories, which is any directory whose name begins with <code>test</code>. When such a directory is found, it is searched for test files and also for subdirectories whose name also begins with <code>test</code>.</p></li><li><p>Names are discovered without regard to case.</p></li></ul><p>Knowing this, you could put your tests in individual files right in your source directory, but it's recommended to instead keep them organized in a subdirectory named <code>tests</code>. After several iterations, you might end up with the following:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="c1">// tests/test_hello.php</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;family=Nunito:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"><title>Dr. Strangetest, a PHP testing framework</title></head><body><header><h1>Dr. Strangetest</h1><p id="subtitle">Or: How I Learned To Stop Worrying And Test The Code</p><p id="tagline">A testing framework for PHP</p><nav><ul id="navbar"><li><a href=".">Home</a></li><li><a href="documentation.html" class="active">Documentation</a></li><li><a href="contributing.html">Contributing</a></li></ul></nav></header><main><nav id="doc-toc"><ol><li class="collapsible"><input type="checkbox"><a href="getting-started.html">Getting Started</a><ol><li><a href="getting-started.html#requirements">Requirements</a></li><li class="collapsible"><input type="checkbox"><a href="getting-started.html#installation">Installation</a><ol><li><a href="getting-started.html#phar-php-archive">Phar (PHP Archive)</a></li><li><a href="getting-started.html#composer">Composer</a></li></ol></li><li><a href="getting-started.html#verifying-installation">Verifying Installation</a></li></ol></li><li class="collapsible"><input type="checkbox" checked>Writing Tests<ol><li><a href="#what-is-a-test">What is a Test?</a></li><li><a href="#making-assertions">Making Assertions</a></li><li><a href="#testing-exceptions-and-errors">Testing Exceptions and Errors</a></li><li class="collapsible"><input type="checkbox" checked><a href="#skipping-tests">Skipping Tests</a><ol><li><a href="#skipping-a-test">Skipping a Test</a></li><li><a href="#viewing-skipped-tests">Viewing Skipped Tests</a></li></ol></li><li><a href="#subtests">Subtests</a></li><li class="collapsible"><input type="checkbox" checked><a href="#test-dependencies">Test Dependencies</a><ol><li><a href="#declaring-dependencies">Declaring Dependencies</a></li><li><a href="#setting-a-test-result">Setting a Test Result</a></li><li><a href="#specifying-test-names">Specifying Test Names</a></li><li><a href="#depending-on-tests-with-subtests">Depending on Tests with Subtests</a></li><li><a href="#depending-on-tests-that-are-run-multiple-times">Depending on Tests That Are Run Multiple Times</a></li></ol></li></ol></li><li class="collapsible"><input type="checkbox"><a href="test-fixtures.html">Test Fixtures</a><ol><li><a href="test-fixtures.html#fixture-functions">Fixture Functions</a></li><li><a href="test-fixtures.html#managing-resources">Managing Resources</a></li><li><a href="test-fixtures.html#providing-fixtures-to-tests">Providing Fixtures to Tests</a></li><li><a href="test-fixtures.html#multiple-parameterized-test-execution">Multiple Parameterized Test Execution</a></li></ol></li><li class="collapsible"><input type="checkbox"><a href="writing-assertions.html">Writing Assertions</a><ol><li><a href="writing-assertions.html#custom-assertion-functions">Custom Assertion Functions</a></li><li><a href="writing-assertions.html#a-comprehensive-example">A Comprehensive Example</a></li><li><a href="writing-assertions.html#please-contribute">Please Contribute!</a></li></ol></li></ol></nav><article><h2 id="writing-tests">Writing Tests</h2><h3 id="what-is-a-test">What is a Test?</h3><p>Starting from the current working directory, Dr. Strangetest automatically discovers your tests using the following rules. All names are discovered without regard to case.</p><ul><li><p>Any directory whose name begins with <code>test</code> is entered and recursively searched for additional tests.</p></li><li><p>Any file whose name begins with <code>test</code> and has file extension <code>.php</code> is included and searched for test functions and classes. A file may contain any number of test classes and/or test functions.</p></li><li><p>Any class whose name begins with <code>test</code> is searched for test methods. If any are found, an instance of the class is instantiated and its test methods are run.</p></li><li><p>Any function or method whose name begins with <code>test</code> is run.</p></li></ul><p>Directories, files, and classes are typically only visited once. However, it is possible that multiple visits may be required in order to complete all tests (usually because <a href="#test-dependencies">test dependencies</a> are involved). In this case, there are a few things to keep in mind:</p><ul><li><p>A file is only ever included once.</p></li><li><p>A new class instance is instantiated on every visit and disposed of when the visit is complete.</p></li><li><p><a href="test-fixtures#fixture-functions">Fixture functions</a> are run on every visit.</p></li></ul><p>Here's what writing tests with Dr. Strangetest might look like:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_greet.php</span>
 
-<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">example\greet\GoodBye</span><span class="p">;</span>
 <span class="k">use</span> <span class="nx">example\greet\Hello</span><span class="p">;</span>
+<span class="k">use</span> <span class="k">function</span> <span class="nf">strangetest\assert_identical</span><span class="p">;</span>
 
-<span class="k">function</span> <span class="nf">test_hello_to_the_world</span><span class="p">()</span> <span class="p">{</span>
+<span class="k">function</span> <span class="nf">test_hello_to_the_world</span><span class="p">()</span>
+<span class="p">{</span>
     <span class="nv">$hello</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Hello</span><span class="p">;</span>
     <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">,</span> <span class="nv">$hello</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">());</span>
 <span class="p">}</span>
 
-<span class="k">function</span> <span class="nf">test_hello_to_humans</span><span class="p">()</span> <span class="p">{</span>
+<span class="k">function</span> <span class="nf">test_hello_to_humans</span><span class="p">()</span>
+<span class="p">{</span>
     <span class="nv">$hello</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Hello</span><span class="p">;</span>
     <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Hello, human!&#39;</span><span class="p">,</span> <span class="nv">$hello</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">(</span><span class="s1">&#39;human&#39;</span><span class="p">));</span>
 <span class="p">}</span>
-</code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="c1">// tests/test_goodbye.php</span>
 
-<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
-<span class="k">use</span> <span class="nx">example\greet\GoodBye</span><span class="p">;</span>
-
-<span class="k">function</span> <span class="nf">test_goodbye_to_the_world</span><span class="p">()</span> <span class="p">{</span>
+<span class="k">function</span> <span class="nf">test_goodbye_to_the_world</span><span class="p">()</span>
+<span class="p">{</span>
     <span class="nv">$adieu</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">GoodBye</span><span class="p">;</span>
     <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Goodbye, cruel world!&#39;</span><span class="p">,</span> <span class="nv">$adieu</span><span class="o">-&gt;</span><span class="na">bid</span><span class="p">());</span>
 <span class="p">}</span>
 
-<span class="k">function</span> <span class="nf">test_goodbye_to_humans</span><span class="p">()</span> <span class="p">{</span>
+<span class="k">function</span> <span class="nf">test_goodbye_to_humans</span><span class="p">()</span>
+<span class="p">{</span>
     <span class="nv">$adieu</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">GoodBye</span><span class="p">;</span>
     <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Goodbye, human!&#39;</span><span class="p">,</span> <span class="nv">$adieu</span><span class="o">-&gt;</span><span class="na">bid</span><span class="p">(</span><span class="s1">&#39;human&#39;</span><span class="p">));</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Assuming you have written the code to make these tests pass, running your tests looks something like:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>easytest
-
-<span class="go">....</span>
-
-
-<span class="go">Seconds elapsed: 0.002</span>
-<span class="go">Passed: 4</span>
-</code></pre></div>
-<p>Alternatively, you might want to consolidate these tests into one file since they're testing the same <code>greet</code> module:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="c1">// tests/test_greet.php</span>
-
-<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
-<span class="k">use</span> <span class="nx">example\greet\GoodBye</span><span class="p">;</span>
-<span class="k">use</span> <span class="nx">example\greet\Hello</span><span class="p">;</span>
-
-<span class="k">class</span> <span class="nc">TestHello</span> <span class="p">{</span>
-    <span class="k">public</span> <span class="k">function</span> <span class="nf">TestHelloToTheWorld</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nv">$hello</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Hello</span><span class="p">;</span>
-        <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">,</span> <span class="nv">$hello</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">());</span>
-    <span class="p">}</span>
-
-    <span class="k">public</span> <span class="k">function</span> <span class="nf">TestHelloToHumans</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nv">$hello</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Hello</span><span class="p">;</span>
-        <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Hello, human!&#39;</span><span class="p">,</span> <span class="nv">$hello</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">(</span><span class="s1">&#39;human&#39;</span><span class="p">));</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="k">class</span> <span class="nc">TestGoodBye</span> <span class="p">{</span>
-    <span class="k">function</span> <span class="nf">TestGoodByeToTheWorld</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nv">$adieu</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">GoodBye</span><span class="p">;</span>
-        <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Goodbye, cruel world!&#39;</span><span class="p">,</span> <span class="nv">$adieu</span><span class="o">-&gt;</span><span class="na">bid</span><span class="p">());</span>
-    <span class="p">}</span>
-
-    <span class="k">function</span> <span class="nf">TestGoodByeToHumans</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nv">$adieu</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">GoodBye</span><span class="p">;</span>
-        <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Goodbye, human!&#39;</span><span class="p">,</span> <span class="nv">$adieu</span><span class="o">-&gt;</span><span class="na">bid</span><span class="p">(</span><span class="s1">&#39;human&#39;</span><span class="p">));</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>And checking with EasyTest:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>easytest
+<p>Assuming you have written the code to make these tests pass, the result of running your tests will look something like:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>strangetest
+<span class="go">Dr. Strangetest</span>
 
 <span class="go">....</span>
 
 
 <span class="go">Seconds elapsed: 0</span>
+<span class="go">Memory used: 1.273 MB</span>
 <span class="go">Passed: 4</span>
 </code></pre></div>
-<p>EasyTest endeavors to let you write your tests whichever way is most natural to you.</p><h3 id="making-assertions">Making Assertions</h3><p>A test "passes" unless an assertion fails or an error happens. Failures and errors are signalled by throwing an exception. This means a test typically ends immediately when a failure or an error happens.</p><p>Although prior examples use assertions provided by EasyTest, you could use PHP's <code>assert</code>:</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">testHelloToTheWorld</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nv">$hello</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Hello</span><span class="p">;</span>
-    <span class="nv">$expected</span> <span class="o">=</span> <span class="s1">&#39;Hello, world!&#39;</span><span class="p">;</span>
-    <span class="nv">$actual</span> <span class="o">=</span> <span class="nv">$hello</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">();</span>
-    <span class="nb">assert</span><span class="p">(</span>
-        <span class="nv">$expected</span> <span class="o">===</span> <span class="nv">$actual</span><span class="p">,</span>
-        <span class="s2">&quot;Unexpected hello</span><span class="se">\n</span><span class="s2">expected: </span><span class="si">$expected\nactual</span><span class="s2">: </span><span class="si">$actual</span><span class="s2">&quot;</span>
-    <span class="p">);</span>
+<p>Alternatively, you might decide to group your tests into different classes and files:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// tests/test_hello.php</span>
+
+<span class="k">use</span> <span class="nx">example\greet\Hello</span><span class="p">;</span>
+<span class="k">use</span> <span class="k">function</span> <span class="nf">strangetest\assert_identical</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">TestHello</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">TestHelloToTheWorld</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="nv">$hello</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Hello</span><span class="p">;</span>
+        <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">,</span> <span class="nv">$hello</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">TestHelloToHumans</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="nv">$hello</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Hello</span><span class="p">;</span>
+        <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Hello, human!&#39;</span><span class="p">,</span> <span class="nv">$hello</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">(</span><span class="s1">&#39;human&#39;</span><span class="p">));</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Although you may find EasyTest's assertions easier to work with, they are by no means comprehensive. PHP's <code>assert</code> is available so you can make any assertion you need (although you can always <a href="writing-assertions">write your own</a>).</p><p>A full list of EasyTest's assertions is listed in the <a href="https://github.com/gnarlyquack/easytest">README</a>.</p><h3 id="testing-exceptions-and-errors">Testing Exceptions and Errors</h3><p>Although nothing stops you from using <code>try</code> and <code>catch</code> to test for exceptions, EasyTest provides <code>easytest\assert_throws</code> to (hopefully) simplify the process. The function takes the name of an expected exception as well as a callable and fails if invoking the callable doesn't result in the expected exception being thrown. Otherwise it returns the exception instance.</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_exception</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nv">$actual</span> <span class="o">=</span> <span class="nx">easytest\assert_throws</span><span class="p">(</span>
-        <span class="nx">ErrorException</span><span class="o">::</span><span class="na">class</span><span class="p">,</span>
-        <span class="k">function</span><span class="p">()</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// tests/test_goodbye.php</span>
+
+<span class="k">use</span> <span class="nx">example\greet\GoodBye</span><span class="p">;</span>
+<span class="k">use</span> <span class="k">function</span> <span class="nf">strangetest\assert_identical</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">TestGoodBye</span>
+<span class="p">{</span>
+    <span class="k">function</span> <span class="nf">TestGoodByeToTheWorld</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="nv">$adieu</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">GoodBye</span><span class="p">;</span>
+        <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Goodbye, cruel world!&#39;</span><span class="p">,</span> <span class="nv">$adieu</span><span class="o">-&gt;</span><span class="na">bid</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">TestGoodByeToHumans</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="nv">$adieu</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">GoodBye</span><span class="p">;</span>
+        <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;Goodbye, human!&#39;</span><span class="p">,</span> <span class="nv">$adieu</span><span class="o">-&gt;</span><span class="na">bid</span><span class="p">(</span><span class="s1">&#39;human&#39;</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>And checking with Dr. Strangetest:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>strangetest
+<span class="go">Dr. Strangetest</span>
+
+<span class="go">....</span>
+
+
+<span class="go">Seconds elapsed: 0</span>
+<span class="go">Memory used: 1.273 MB</span>
+<span class="go">Passed: 4</span>
+</code></pre></div>
+<h3 id="making-assertions">Making Assertions</h3><p>A test "passes" unless an assertion fails or an error happens. Failures and errors are signalled by throwing an exception. This means a test typically ends immediately when a failure or an error happens.</p><p>Failed assertions are exceptions that are instances of <code>strangetest\Failure</code>. In PHP 7 and higher, this is a subclass of PHP's built-in <code>AssertionError</code> exception. Any other exception is treated as an error.</p><p>Although prior examples use assertions provided by Dr. Strangetest, you can also use PHP's built-in <code>assert</code> function. Failed assertions are automatically converted into exceptions as described above, and in PHP 7.2 and higher <code>assert.exception</code> is automatically enabled.</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">testHelloToTheWorld</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nv">$hello</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Hello</span><span class="p">;</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span> <span class="o">===</span> <span class="nv">$hello</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Dr. Strangetest's assertions will generally provide more detailed information about why the assertion failed than PHP's <code>assert</code> does, but they are by no mean comprehensive. <code>assert</code> provides a means to make any assertion you want, although <a href="writing-assertions">writing your own assertions</a> is also straightforward.</p><p>A full list of Dr. Strangetest's assertions is listed in the <a href="https://github.com/gnarlyquack/strangetest">README</a>.</p><h3 id="testing-exceptions-and-errors">Testing Exceptions and Errors</h3><p>Although nothing stops you from using <code>try</code> and <code>catch</code> to test for exceptions, <code>strangetest\assert_throws</code> tries to simplify the process. The function takes the name of an expected exception and a callable and fails if invoking the callable doesn't result in the expected exception being thrown, otherwise it returns the exception instance.</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_division_by_zero</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nv">$actual</span> <span class="o">=</span> <span class="nx">strangetest\assert_throws</span><span class="p">(</span>
+        <span class="nx">DivisionByZeroError</span><span class="o">::</span><span class="na">class</span><span class="p">,</span>
+        <span class="k">function</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
     <span class="p">);</span>
-    <span class="nx">easytest\assert_identical</span><span class="p">(</span>
+    <span class="nx">strangetest\assert_identical</span><span class="p">(</span>
         <span class="s1">&#39;Division by zero&#39;</span><span class="p">,</span> <span class="nv">$actual</span><span class="o">-&gt;</span><span class="na">getMessage</span><span class="p">()</span>
     <span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>You might note that dividing by zero actually triggers a warning (as of PHP 7.4), not an exception. As you can see, EasyTest converts any (non-fatal) error into an <code>ErrorException</code> and throws it.</p><h3 id="skipping-tests">Skipping Tests</h3><p>Your test suite might want to skip tests if it determines those tests are incapable of being run, e.g., a version requirement isn't met or an extension isn't enabled. For this, use <code>easytest\skip</code>, which takes a string explaining why the test is being skipped.</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_skip</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">version_compare</span><span class="p">(</span><span class="k">PHP_VERSION</span><span class="p">,</span> <span class="nx">MAX_VERSION</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">easytest\skip</span><span class="p">(</span><span class="s1">&#39;PHP version must be less than &#39;</span> <span class="o">.</span> <span class="nx">MAX_VERSION</span><span class="p">);</span>
+<p>Testing for errors is exactly the same, as (non-fatal) PHP errors are automatically converted into an <code>ErrorException</code> and thrown. In fact, the above test will fail in PHP 7.4 and earlier, because division by zero triggers a warning error instead of throwing an exception. To make the test pass across multiple versions of PHP, you might update the test as follows:</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_division_by_zero</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nv">$expected</span> <span class="o">=</span> <span class="nb">version_compare</span><span class="p">(</span><span class="k">PHP_VERSION</span><span class="p">,</span> <span class="s1">&#39;8.0&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;&#39;</span><span class="p">)</span>
+              <span class="o">?</span> <span class="nx">ErrorException</span><span class="o">::</span><span class="na">class</span>
+              <span class="o">:</span> <span class="nx">DivisionByZeroError</span><span class="o">::</span><span class="na">class</span><span class="p">;</span>
+
+    <span class="nv">$actual</span> <span class="o">=</span> <span class="nx">strangetest\assert_throws</span><span class="p">(</span>
+        <span class="nv">$expected</span><span class="p">,</span>
+        <span class="k">function</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+    <span class="p">);</span>
+    <span class="nx">strangetest\assert_identical</span><span class="p">(</span>
+        <span class="s1">&#39;Division by zero&#39;</span><span class="p">,</span> <span class="nv">$actual</span><span class="o">-&gt;</span><span class="na">getMessage</span><span class="p">()</span>
+    <span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="skipping-tests">Skipping Tests</h3><h4 id="skipping-a-test">Skipping a Test</h4><p>Your test suite might want to skip tests if it determines those tests are incapable of being run, e.g., a version requirement isn't met or an extension isn't enabled. For this, use the function <code>strangetest\skip</code>.</p><div class="highlight"><pre><span></span><code><span class="nx">strangetest\skip</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$reason</span><span class="p">)</span><span class="o">:</span> <span class="nx">never</span>
+</code></pre></div>
+<p><code>$reason</code> is a string explaining why a test is being skipped.</p><p>No value is returned. This function unconditionally throws an instance of <code>strangetest\Skip</code>.</p><p>Here's an example of how this might be used in your tests:</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_skip</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">version_compare</span><span class="p">(</span><span class="k">PHP_VERSION</span><span class="p">,</span> <span class="nx">MAX_VERSION</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nx">strangetest\skip</span><span class="p">(</span><span class="s1">&#39;PHP version must be less than &#39;</span> <span class="o">.</span> <span class="nx">MAX_VERSION</span><span class="p">);</span>
     <span class="p">}</span>
 
     <span class="c1">// The actual test goes here. This is never reached if the version</span>
     <span class="c1">// requirement isn&#39;t met.</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>The resulting test run might look something like:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>easytest
+<p>The resulting test run might look something like:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>strangetest
+<span class="go">Dr. Strangetest</span>
 
 <span class="go">........S.</span>
 
 
 <span class="go">This report omitted skipped tests.</span>
-<span class="go">To view, rerun easytest with the --verbose option.</span>
+<span class="go">To view, rerun Dr. Strangetest with the --verbose option.</span>
 
 <span class="go">Seconds elapsed: 0.003</span>
+<span class="go">Memory used: 1.211 MB</span>
 <span class="go">Passed: 9, Skipped: 1</span>
 </code></pre></div>
-<p>Although EasyTest indicates tests were skipped during the test run, it doesn't normally give any details. Since you will likely be running the test suite repeatedly, showing details about expected skipped tests usually just clutters the report. Follow the provided suggestion to see what tests were skipped:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>easytest --verbose
+<h4 id="viewing-skipped-tests">Viewing Skipped Tests</h4><p>Although the final test reports indicates tests were skipped during the test run, details are not normally shown. Since you will likely be running the test suite repeatedly, showing details about expected skipped tests usually just clutters the report. Run Dr. Strangetest in verbose mode to see what tests were skipped and why:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>strangetest --verbose
+<span class="go">Dr. Strangetest</span>
 
 <span class="go">........S.</span>
 
 
 <span class="go">SKIPPED: test_skip</span>
 <span class="go">PHP version must be less than 7.2</span>
-<span class="go">in tests/test_skip.php on line 5</span>
+<span class="go">in test_skip.php on line 7</span>
 
 
 
 <span class="go">Seconds elapsed: 0.003</span>
+<span class="go">Memory used: 1.211 MB</span>
 <span class="go">Passed: 9, Skipped: 1</span>
 </code></pre></div>
-<h3 id="subtests">Subtests</h3><p>While building out your greet module, you've decided you want a different greeting based on the time of day. You might be tempted to write:</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_greetings</span><span class="p">()</span> <span class="p">{</span>
+<h3 id="subtests">Subtests</h3><p>Subtests ensure a test continues even if an assertion fails. This can be useful if you want to exercise a single test repeated with multiple data sets, or if the outcome of several assertions can give a better idea of why a particular assertion failed. Dr. Strangetest implements this through the <code>strangetest\Context</code> interface, an instance of which is provided as the last argument to every test function and test method.</p><div class="highlight"><pre><span></span><code><span class="k">public</span> <span class="nx">strangetest\Context</span><span class="o">::</span><span class="na">subtest</span><span class="p">(</span><span class="nx">callable</span> <span class="nv">$callback</span><span class="p">)</span><span class="o">:</span> <span class="nx">bool</span>
+</code></pre></div>
+<p><code>$callback</code> is a callable that should take no parameters and return <code>void</code>.</p><p>A boolean is returned indicating if <code>$callback</code> passed or failed. <code>$callback</code> fails if invoking it triggers an assertion failure. Other errors and exceptions are not guarded against.</p><p>A test that uses subtests only passes if all subtests pass. If any subtest fails, all failures are shown in the test report.</p><p>Revisiting an earlier example, perhaps you've decided you want a different greeting based on the time of day. It might be tempting to write:</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_greetings</span><span class="p">()</span>
+<span class="p">{</span>
     <span class="nv">$greetings</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">[</span><span class="k">new</span> <span class="nx">MorningGreeting</span><span class="p">,</span> <span class="s1">&#39;Good morning, world!&#39;</span><span class="p">],</span>
-        <span class="p">[</span><span class="k">new</span> <span class="nx">AfternoonGreeting</span><span class="p">,</span> <span class="s1">&#39;Good afternoon, world!&#39;</span><span class="p">],</span>
-        <span class="p">[</span><span class="k">new</span> <span class="nx">EveningGreeting</span><span class="p">,</span> <span class="s1">&#39;Good evening, world!&#39;</span><span class="p">],</span>
-        <span class="p">[</span><span class="k">new</span> <span class="nx">NightGreeting</span><span class="p">,</span> <span class="s1">&#39;Good night, world!&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="k">new</span> <span class="nx">MorningGreet</span><span class="p">,</span> <span class="s1">&#39;Good morning, world!&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="k">new</span> <span class="nx">AfternoonGreet</span><span class="p">,</span> <span class="s1">&#39;Good afternoon, world!&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="k">new</span> <span class="nx">EveningGreet</span><span class="p">,</span> <span class="s1">&#39;Good evening, world!&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="k">new</span> <span class="nx">NightGreet</span><span class="p">,</span> <span class="s1">&#39;Good night, world!&#39;</span><span class="p">],</span>
     <span class="p">];</span>
 
     <span class="k">foreach</span> <span class="p">(</span><span class="nv">$greetings</span> <span class="k">as</span> <span class="p">[</span><span class="nv">$greeter</span><span class="p">,</span> <span class="nv">$expected</span><span class="p">])</span> <span class="p">{</span>
-        <span class="nx">easytest\assert_identical</span><span class="p">(</span><span class="nv">$expected</span><span class="p">,</span> <span class="nv">$greeter</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">());</span>
+        <span class="nx">strangetest\assert_identical</span><span class="p">(</span><span class="nv">$expected</span><span class="p">,</span> <span class="nv">$greeter</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">());</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>The problem is, if any test fails, the next test isn't run.</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>easytest
+<p>The problem is, if any test fails, the next test isn't run.</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>strangetest
+<span class="go">Dr. Strangetest</span>
 
 <span class="go">F</span>
 
@@ -160,14 +196,16 @@
 <span class="go">- &#39;Good morning, world!&#39;</span>
 <span class="go">+ &#39;Hello, world!&#39;</span>
 
-<span class="go">in tests/test_greetings.php on line 15</span>
+<span class="go">in test_greetings.php on line 14</span>
 
 
 
-<span class="go">Seconds elapsed: 0.002</span>
+<span class="go">Seconds elapsed: 0</span>
+<span class="go">Memory used: 1.273 MB</span>
 <span class="go">Failed: 1</span>
 </code></pre></div>
-<p>Subtests ensure a test continues even if an assertion fails. EasyTest implements this by providing every test function and test method an instance of <code>easytest\Context</code>. This is always passed as the last parameter. The <code>Context</code> object mirrors EasyTest's exceptions but returns <code>true</code> or <code>false</code> indicating if the assertion passed instead of throwing an exception.</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_greetings</span><span class="p">(</span><span class="nx">easytest\Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
+<p>By using subtests, you can ensure the test is run for all data sets.</p><div class="highlight"><pre><span></span><code><span class="k">function</span> <span class="nf">test_greetings</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
     <span class="nv">$greetings</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">[</span><span class="k">new</span> <span class="nx">MorningGreet</span><span class="p">,</span> <span class="s1">&#39;Good morning, world!&#39;</span><span class="p">],</span>
         <span class="p">[</span><span class="k">new</span> <span class="nx">AfternoonGreet</span><span class="p">,</span> <span class="s1">&#39;Good afternoon, world!&#39;</span><span class="p">],</span>
@@ -175,12 +213,20 @@
         <span class="p">[</span><span class="k">new</span> <span class="nx">NightGreet</span><span class="p">,</span> <span class="s1">&#39;Good night, world!&#39;</span><span class="p">],</span>
     <span class="p">];</span>
 
-    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$greetings</span> <span class="k">as</span> <span class="p">[</span><span class="nv">$greeter</span><span class="p">,</span> <span class="nv">$expected</span><span class="p">])</span> <span class="p">{</span>
-        <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">assert_identical</span><span class="p">(</span><span class="nv">$expected</span><span class="p">,</span> <span class="nv">$greeter</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">());</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$greetings</span> <span class="k">as</span> <span class="nv">$greeting</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">subtest</span><span class="p">(</span>
+            <span class="k">function</span> <span class="p">()</span> <span class="k">use</span> <span class="p">(</span><span class="nv">$greeting</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="p">[</span><span class="nv">$greeter</span><span class="p">,</span> <span class="nv">$expected</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$greeting</span><span class="p">;</span>
+                <span class="nx">strangetest\assert_identical</span><span class="p">(</span><span class="nv">$expected</span><span class="p">,</span> <span class="nv">$greeter</span><span class="o">-&gt;</span><span class="na">greet</span><span class="p">());</span>
+            <span class="p">}</span>
+        <span class="p">);</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Now you can see all failures:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>easytest
+<p>Now you can see all failures:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>strangetest
+<span class="go">Dr. Strangetest</span>
 
 <span class="go">FFFF</span>
 
@@ -194,7 +240,7 @@
 <span class="go">- &#39;Good morning, world!&#39;</span>
 <span class="go">+ &#39;Hello, world!&#39;</span>
 
-<span class="go">in tests/test_greetings.php on line 15</span>
+<span class="go">in test_greetings_subtest.php on line 20</span>
 
 
 
@@ -207,7 +253,7 @@
 <span class="go">- &#39;Good afternoon, world!&#39;</span>
 <span class="go">+ &#39;Hello, world!&#39;</span>
 
-<span class="go">in tests/test_greetings.php on line 15</span>
+<span class="go">in test_greetings_subtest.php on line 20</span>
 
 
 
@@ -220,7 +266,7 @@
 <span class="go">- &#39;Good evening, world!&#39;</span>
 <span class="go">+ &#39;Hello, world!&#39;</span>
 
-<span class="go">in tests/test_greetings.php on line 15</span>
+<span class="go">in test_greetings_subtest.php on line 20</span>
 
 
 
@@ -233,86 +279,292 @@
 <span class="go">- &#39;Good night, world!&#39;</span>
 <span class="go">+ &#39;Hello, world!&#39;</span>
 
-<span class="go">in tests/test_greetings.php on line 15</span>
+<span class="go">in test_greetings_subtest.php on line 20</span>
 
 
 
-<span class="go">Seconds elapsed: 0.002</span>
+<span class="go">Seconds elapsed: 0</span>
+<span class="go">Memory used: 1.273 MB</span>
 <span class="go">Failed: 4</span>
 </code></pre></div>
-<h3 id="test-dependencies">Test Dependencies</h3><p>Test dependencies allow a test (the "dependent") to require one or more other tests ("requisites") to first pass before the dependent is executed. If any requisites are not successful, the dependent is skipped.</p><p>EasyTest implements this by providing every test function and test method an instance of <code>easytest\Context</code>. This is always passed as the last parameter. The <code>Context</code> object provides a <code>set</code> method for requisites to set state for use by dependents and a <code>depend_on</code> method for dependents to declare their dependency on requisites and retrieve any state saved by them.</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<h3 id="test-dependencies">Test Dependencies</h3><p>Test dependencies allow a test (the "dependent") to require one or more other tests ("prerequisites") to first pass before the dependent is executed. If any prerequisite is not successful, the dependent is skipped. Prerequisites may also provide a test result for dependents to use in their own tests, although there is no requirement for a prerequisite to do so.</p><p>Dr. Strangetest implements this through the <code>strangetest\Context</code> interface, an instance of which is provided as the last argument to every test function and test method. The interface provides two methods: <code>set</code> and <code>requires</code>. <code>set</code> allows prerequisites to <a href="#setting-a-test-result">save a result value</a>, and <code>requires</code> allows dependents to <a href="#declaring-dependencies">declare dependencies</a> on prerequisites and retrieve any saved result a prerequisite may have saved.</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
 
-<span class="k">namespace</span> <span class="nx">test_stack</span><span class="p">;</span>
-
-<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
-<span class="k">use</span> <span class="nx">easytest\Context</span><span class="p">;</span>
-
-<span class="k">function</span> <span class="nf">test_empty</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$array</span> <span class="o">=</span> <span class="p">[];</span>
-    <span class="nx">assert_identical</span><span class="p">([],</span> <span class="nv">$array</span><span class="p">);</span>
-    <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="nv">$array</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="k">function</span> <span class="nf">test_push</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$array</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">depend_on</span><span class="p">(</span><span class="s1">&#39;test_empty&#39;</span><span class="p">);</span>
-    <span class="nb">array_push</span><span class="p">(</span><span class="nv">$array</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">);</span>
-    <span class="nx">assert_identical</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">],</span> <span class="nv">$array</span><span class="p">);</span>
-    <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="nv">$array</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="k">function</span> <span class="nf">test_pop</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$array</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">depend_on</span><span class="p">(</span><span class="s1">&#39;test_push&#39;</span><span class="p">);</span>
-    <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="nb">array_pop</span><span class="p">(</span><span class="nv">$array</span><span class="p">));</span>
-    <span class="nx">assert_identical</span><span class="p">([],</span> <span class="nv">$array</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>A dependent can declare a dependency on multiple requisites by passing multiple names to <code>depend_on</code>. In this case, an associative array of the state saved by the requisites is returned indexed by the provided names. Note that there is no requirement for a requisite to save state, and if it did not, it is not included in the array.</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
-
-<span class="k">namespace</span> <span class="nx">multiple_dependencies</span><span class="p">;</span>
-
-<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
-<span class="k">use</span> <span class="nx">easytest\Context</span><span class="p">;</span>
-
-<span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
     <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
 <span class="p">}</span>
 
-<span class="k">function</span> <span class="nf">test_two</span><span class="p">()</span> <span class="p">{</span>
+<span class="k">function</span> <span class="nf">test_two</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$actual</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">requires</span><span class="p">(</span><span class="s1">&#39;test_one&#39;</span><span class="p">);</span>
+    <span class="nx">strangetest\assert_identical</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nv">$actual</span><span class="p">);</span>
 <span class="p">}</span>
 
-<span class="k">function</span> <span class="nf">test_three</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">function</span> <span class="nf">test_three</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
     <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
 <span class="p">}</span>
 
-<span class="k">function</span> <span class="nf">test_four</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$state</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">depend_on</span><span class="p">(</span><span class="s1">&#39;test_one&#39;</span><span class="p">,</span> <span class="s1">&#39;test_two&#39;</span><span class="p">,</span> <span class="s1">&#39;test_three&#39;</span><span class="p">);</span>
-    <span class="nx">assert_identical</span><span class="p">([</span><span class="s1">&#39;test_one&#39;</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;test_three&#39;</span> <span class="o">=&gt;</span> <span class="mi">3</span><span class="p">],</span> <span class="nv">$state</span><span class="p">);</span>
+<span class="k">function</span> <span class="nf">test_four</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$state</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">requires</span><span class="p">(</span><span class="s1">&#39;test_one&#39;</span><span class="p">,</span> <span class="s1">&#39;test_two&#39;</span><span class="p">,</span> <span class="s1">&#39;test_three&#39;</span><span class="p">);</span>
+    <span class="nx">strangetest\assert_identical</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;test_one&#39;</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;test_three&#39;</span> <span class="o">=&gt;</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="nv">$state</span>
+    <span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>You may have noticed that <code>depend_on</code> determines a fully-qualified name based on the current context. In the previous examples, <code>depend_on</code> resolved the function names to the correct namespaced functions even though the names are not fully qualified. This also works in classes:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<h4 id="declaring-dependencies">Declaring Dependencies</h4><p>The <code>strangetest\Context::requires</code> method lets a test declare a dependency on one or more prerequisites and retrieve any result they may have saved.</p><div class="highlight"><pre><span></span><code><span class="k">public</span> <span class="nx">strangetest\Context</span><span class="o">::</span><span class="na">requires</span><span class="p">(</span><span class="nx">string</span> <span class="o">...</span><span class="nv">$names</span><span class="p">)</span><span class="o">:</span> <span class="nx">mixed</span>
+</code></pre></div>
+<p><code>$names</code> is one or more <a href="#specifying-test-names">test function names provided as a string</a>. At least one name must be provided.</p><p>Depending on the state of the provided names, one of the following is returned:</p><ul><li><p>If one or more of the tests specified in <code>$names</code> has failed, an instance of <code>strangetest\Skip</code> is thrown.</p></li><li><p>If one or more of the tests specified in <code>$names</code> has not been run, an instance of <code>strangetest\Postpone</code> is thrown. The calling function will be run again at some point after all prerequisites have been run.</p></li><li><p>If <code>$names</code> contains only one test name and the test saved a result, the result is returned.</p></li><li><p>If <code>$names</code> contains multiple test names and any of the tests saved a result, an array is returned that maps each test name to its result. Array indices will match the names in <code>$names</code>, although only tests that saved a result are included in the array.</p></li><li><p>If none of the tests in <code>$names</code> saved a result, <code>null</code> is returned.</p></li></ul><h4 id="setting-a-test-result">Setting a Test Result</h4><p>The <code>strangetest\Context::set</code> method lets prerequisites save a result for dependents to use.</p><div class="highlight"><pre><span></span><code><span class="k">public</span> <span class="nx">strangetest\Context</span><span class="o">::</span><span class="na">set</span><span class="p">(</span><span class="nx">mixed</span> <span class="nv">$value</span><span class="p">)</span><span class="o">:</span> <span class="nx">void</span>
+</code></pre></div>
+<p><code>$value</code> is the result value to save. The method does not return a value.</p><p>The method may be called at any time during a test and may also be called multiple times, however only the final result value is saved.</p><p>You should be wary about the type of value being saved as a test result. There is no special handling of it, it is simply saved and passed on to dependents. Ideally, it should be a standalone value that has no dependency on external state, is isolated from the effects of subsequent tests operating on it, and does not rely on an inexplicit ordering or specific sequencing of tests. Keep in mind, although Dr. Strangetest ensures your tests are run in an order to satisfy declared dependencies, it does not otherwise guarantee that tests are run in a particular order or sequence.</p><h4 id="specifying-test-names">Specifying Test Names</h4><p>Prerequisite test names are specified as a string. For functions, this is just the name of the function. Method names can be specified using the syntax <code>classname::methodname</code>.</p><p>Since PHP treats dynamically-specified names as fully-qualified names, Dr. Strangetest considers any qualified prerequisite name to be fully qualified and attempts to resolve the test name as is. However, if provided with an unqualified name, Dr. Strangetest applies its own name resolution.</p><p>If provided with an unqualified function name, Dr. Strangetest resolves the name to either a method in the current class or a function in the current namespace. You can force resolution to a function in the current namespace by prepending the name with <code>::</code>, signifying an empty class. You can force resolution to a function in the global namespace by prepending the name with <code>\</code>.</p><p>If provided with an unqualifed class name, Dr. Strangetest resolves the name to a class in the current namespace. You can force resolution to the global namespace by prepending the name with <code>\</code>.</p><p>Here's an example of how Dr. Strangetest resolves prerequisite test names from different contexts:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
 
-<span class="k">use</span> <span class="k">function</span> <span class="nf">easytest\assert_identical</span><span class="p">;</span>
-<span class="k">use</span> <span class="nx">easytest\Context</span><span class="p">;</span>
-
-<span class="k">class</span> <span class="nc">TestStack</span> <span class="p">{</span>
-    <span class="k">public</span> <span class="k">function</span> <span class="nf">testEmpty</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nv">$array</span> <span class="o">=</span> <span class="p">[];</span>
-        <span class="nx">assert_identical</span><span class="p">([],</span> <span class="nv">$array</span><span class="p">);</span>
-        <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="nv">$array</span><span class="p">);</span>
+<span class="k">namespace</span> <span class="p">{</span>
+    <span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="s1">&#39;global function one&#39;</span><span class="p">);</span>
     <span class="p">}</span>
 
-    <span class="k">public</span> <span class="k">function</span> <span class="nf">testPush</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nv">$array</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">depend_on</span><span class="p">(</span><span class="s1">&#39;testEmpty&#39;</span><span class="p">);</span>
-        <span class="nb">array_push</span><span class="p">(</span><span class="nv">$array</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">);</span>
-        <span class="nx">assert_identical</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">],</span> <span class="nv">$array</span><span class="p">);</span>
-        <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="nv">$array</span><span class="p">);</span>
+    <span class="k">function</span> <span class="nf">test_two</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$actual</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">requires</span><span class="p">(</span>
+            <span class="s1">&#39;test_one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Test::test_one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;example\test_one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;example\Test::test_one&#39;</span>
+        <span class="p">);</span>
+        <span class="nv">$expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;global function one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Test::test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;global method one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;example\test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;example function one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;example\Test::test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;example method one&#39;</span><span class="p">,</span>
+        <span class="p">];</span>
+        <span class="nb">assert</span><span class="p">(</span><span class="nv">$actual</span> <span class="o">===</span> <span class="nv">$expected</span><span class="p">);</span>
     <span class="p">}</span>
 
-    <span class="k">public</span> <span class="k">function</span> <span class="nf">testPop</span><span class="p">(</span><span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nv">$array</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">depend_on</span><span class="p">(</span><span class="s1">&#39;testPush&#39;</span><span class="p">);</span>
-        <span class="nx">assert_identical</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="nb">array_pop</span><span class="p">(</span><span class="nv">$array</span><span class="p">));</span>
-        <span class="nx">assert_identical</span><span class="p">([],</span> <span class="nv">$array</span><span class="p">);</span>
+    <span class="k">class</span> <span class="nc">Test</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="s1">&#39;global method one&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">test_two</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$actual</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">requires</span><span class="p">(</span>
+                <span class="s1">&#39;test_one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;::test_one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;example\test_one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;example\Test::test_one&#39;</span>
+            <span class="p">);</span>
+            <span class="nv">$expected</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s1">&#39;test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;global method one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;::test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;global function one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;example\test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;example function one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;example\Test::test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;example method one&#39;</span><span class="p">,</span>
+            <span class="p">];</span>
+            <span class="nb">assert</span><span class="p">(</span><span class="nv">$actual</span> <span class="o">===</span> <span class="nv">$expected</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">namespace</span> <span class="nx">example</span> <span class="p">{</span>
+
+    <span class="k">use</span> <span class="nx">strangetest</span><span class="p">;</span>
+
+    <span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="s1">&#39;example function one&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">test_two</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$actual</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">requires</span><span class="p">(</span>
+            <span class="s1">&#39;test_one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Test::test_one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;\test_one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;\Test::test_one&#39;</span>
+        <span class="p">);</span>
+        <span class="nv">$expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;example function one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Test::test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;example method one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;\test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;global function one&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;\Test::test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;global method one&#39;</span><span class="p">,</span>
+        <span class="p">];</span>
+        <span class="nb">assert</span><span class="p">(</span><span class="nv">$actual</span> <span class="o">===</span> <span class="nv">$expected</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">Test</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="s1">&#39;example method one&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">test_two</span><span class="p">(</span><span class="nx">strangetest\Context</span> <span class="nv">$context</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$actual</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">requires</span><span class="p">(</span>
+                <span class="s1">&#39;test_one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;::test_one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;\test_one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;\Test::test_one&#39;</span>
+            <span class="p">);</span>
+            <span class="nv">$expected</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s1">&#39;test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;example method one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;::test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;example function one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;\test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;global function one&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;\Test::test_one&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;global method one&#39;</span><span class="p">,</span>
+            <span class="p">];</span>
+            <span class="nb">assert</span><span class="p">(</span><span class="nv">$actual</span> <span class="o">===</span> <span class="nv">$expected</span><span class="p">);</span>
+        <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>You can, of course, always provide a fully-qualified name to depend on a function or method in another namespace. Note that, if wanting to depend on a name in the global namespace from a namespaced function or method, the name <b>must</b> start with a backslash (<code>\</code>). You can depend on a method from a different class using the notation <code>ClassName::methodName</code>. As a convenience, a method can depend on a function in the current namespace using the notation <code>::function_name</code>.</p><p><a href="test-fixtures#multiple-parameterized-test-execution">Multiple test execution</a> has not been discussed yet, but <code>depend_on</code> also assumes a requisite is run with the same argument set as the dependent. A non-multiply-executed dependent that depends on a multiply-executed requisite will only be run if all runs of the requisite pass. A multiply-executed dependent can depend on a non-multiply-executed requisite by using empty parenthesis after the name: <code>requisite_name()</code>. Otherwise, a dependent can specify an argument set by enclosing the name of the argument set in parenthesis after the name of the requisite: <code>requisite_name(argument_set_name)</code>.</p></article></main><footer><p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by/4.0/80x15.png"></a><br>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</p><p>Please open an issue if you find an error in these pages. Fixes are also welcome!</p></footer></body></html>
+<h4 id="depending-on-tests-with-subtests">Depending on Tests with Subtests</h4><p>A test may declare a dependency on a test that uses <a href="#subtests">subtests</a>. The prerequisite is considered to have passed if all the prerequisite's subtests pass. The prerequisite may <a href="#setting-a-test-result">set a result</a> as normal.</p><h4 id="depending-on-tests-that-are-run-multiple-times">Depending on Tests That Are Run Multiple Times</h4><p>Dr. Strangetest's <a href="test-fixtures">test fixtures</a> make it possible to <a href="test-fixtures#multiple-parameterized-test-execution">run tests multiple times</a>. Dependents may themselves be run multiples times and may declare dependencies on prerequisites that may also be run multiple times. How dependencies are resolved depends on the relationship between the two tests.</p><p>By default, there is an implicit, top-level test run that comprises all the tests in the test suite. If a test suite does not use any test run fixtures, the entire test suite will consist of just this one test run. However, run fixtures create "sub-runs" that are children of the top-level run: the tests are part of the top-level run, but they are executed multiple times within it. A sub-run may, in turn, have its own sub-runs. This forms a tree: every sub-run is a child of exactly one parent run.</p><p>When a test is executed, it is executed within the context of a particular run. If a test belongs to multiple runs, it is executed once for every run. Dr. Strangetest remembers the outcome of every test execution as well as any result the test may have saved and associates them with the appropriate run.</p><p>Given some test run, the tests that constitute the run are executed one or more times (with multiple test executions implying the test belongs to sub-runs of the current run). If all of a test's executions pass, the test passes the run, otherwise it fails. If we're interested in the outcome of particular test but the test is not part of the current run, we can move up the hierarchy until finding a run that includes the test (potentially reaching the top-level run, which includes every test).</p><p>When a dependent is executed, it will have some run in common with its prerequisite: either the prerequisite is part of the same run, or the two tests have a parent run in common. Dr. Strangetest finds this common run and uses the prerequisite's outcome for that run to determine if the dependency is satisfied. If this resolves to a single execution of the prerequisite and the prerequisite saved a result, that result is provided to the dependent. Otherwise, no test result is available.</p><p>This explanation may be conceptually difficult to grasp, so here is an example that hopefully demonstrates this more clearly:</p><div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// setup.php</span>
+
+<span class="k">function</span> <span class="nf">setup_run_dir1</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">setup_run_dir2</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_a.php</span>
+
+<span class="k">namespace</span> <span class="nx">a</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">strangetest\Context</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup_run_a1</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$dir_arg</span><span class="p">,</span> <span class="mi">3</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">setup_run_a2</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$dir_arg</span><span class="p">,</span> <span class="mi">4</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">,</span> <span class="nx">int</span> <span class="nv">$file_arg</span><span class="p">,</span> <span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">([</span><span class="nv">$dir_arg</span><span class="p">,</span> <span class="nv">$file_arg</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_two</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">,</span> <span class="nx">int</span> <span class="nv">$file_arg</span><span class="p">,</span> <span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$actual</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">requires</span><span class="p">(</span>
+        <span class="s1">&#39;test_one&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;b\test_one&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;c\test_one&#39;</span>
+    <span class="p">);</span>
+    <span class="nv">$expected</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;test_one&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$dir_arg</span><span class="p">,</span> <span class="nv">$file_arg</span><span class="p">],</span>
+        <span class="s1">&#39;c\test_one&#39;</span> <span class="o">=&gt;</span> <span class="nv">$dir_arg</span><span class="p">,</span>
+    <span class="p">];</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$expected</span> <span class="o">===</span> <span class="nv">$actual</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_b.php</span>
+
+<span class="k">namespace</span> <span class="nx">b</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">strangetest\Context</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">setup_run_b1</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$dir_arg</span><span class="p">,</span> <span class="mi">5</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">setup_run_b2</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nv">$dir_arg</span><span class="p">,</span> <span class="mi">6</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">,</span> <span class="nx">int</span> <span class="nv">$file_arg</span><span class="p">,</span> <span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nb">assert</span><span class="p">((</span><span class="mi">1</span> <span class="o">===</span> <span class="nv">$dir_arg</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="mi">5</span> <span class="o">===</span> <span class="nv">$file_arg</span><span class="p">));</span>
+    <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">([</span><span class="nv">$dir_arg</span><span class="p">,</span> <span class="nv">$file_arg</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_two</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">,</span> <span class="nx">int</span> <span class="nv">$file_arg</span><span class="p">,</span> <span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$actual</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">requires</span><span class="p">(</span>
+        <span class="s1">&#39;test_one&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;a\test_one&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;c\test_one&#39;</span>
+    <span class="p">);</span>
+    <span class="nv">$expected</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;test_one&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="nv">$dir_arg</span><span class="p">,</span> <span class="nv">$file_arg</span><span class="p">],</span>
+        <span class="s1">&#39;c\test_one&#39;</span> <span class="o">=&gt;</span> <span class="nv">$dir_arg</span><span class="p">,</span>
+    <span class="p">];</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$expected</span> <span class="o">===</span> <span class="nv">$actual</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">// test_c.php</span>
+
+<span class="k">namespace</span> <span class="nx">c</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">strangetest\Context</span><span class="p">;</span>
+
+<span class="k">function</span> <span class="nf">test_one</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">,</span> <span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="nv">$dir_arg</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">test_two</span><span class="p">(</span><span class="nx">int</span> <span class="nv">$dir_arg</span><span class="p">,</span> <span class="nx">Context</span> <span class="nv">$context</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$actual</span> <span class="o">=</span> <span class="nv">$context</span><span class="o">-&gt;</span><span class="na">requires</span><span class="p">(</span>
+        <span class="s1">&#39;test_one&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;a\test_one&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;b\test_one&#39;</span>
+    <span class="p">);</span>
+    <span class="nv">$expected</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;test_one&#39;</span> <span class="o">=&gt;</span> <span class="nv">$dir_arg</span><span class="p">];</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$expected</span> <span class="o">===</span> <span class="nv">$actual</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The tests in <code>test_a.php</code> will each be run four times, and their runs will be <code>(dir1, a1)</code>, <code>(dir1, a2)</code>, <code>(dir2, a1)</code>, and <code>(dir2, a2)</code>.</p><p>Similarly, the tests in <code>test_b.php</code> will also each be run four times, but their runs will be <code>(dir1, b1)</code>, <code>(dir1, b2)</code>, <code>(dir2, b1)</code>, and <code>(dir2, b2)</code>.</p><p>Meanwhile, the tests in <code>test_c.php</code> will each only be run twice, with their runs being <code>(dir1)</code>, and <code>(dir2)</code>.</p><p>Consider the dependencies declared in <code>a\test_two</code>:</p><ul><li><p><code>a\test_one</code> is in the same run, so the dependency is determined by each run of <code>a\test_one</code>, which also means each test result saved by <code>a\test_one</code> is available to <code>a\test_two</code>. This is verified by asserting that the retrieved values are the same as those received by parameters <code>$dir_arg</code> and <code>$file_arg</code>.</p></li><li><p><code>b\test_one</code> is not in the same run, but there is a common parent run: <code>a\test_two (dir1, a1)</code> and <code>a\test_two (dir1, a2)</code> depend on <code>b\test_one (dir1)</code>, while <code>a\test_two (dir2, a1)</code> and <code>a\test_two (dir2, a2)</code> depend on <code>b\test_one (dir2)</code>. In each case, the dependency is determined by two runs of <code>b\test_one</code>: <code>b\test_one (dir1)</code> is determined by the net result of <code>b\test_one (dir1, b1)</code> and <code>b\test_one (dir1, b2)</code>, while <code>b\test_one (dir2)</code> is determined by the net result of <code>b\test_one (dir2, b1)</code> and <code>b\test_one (dir2, b2)</code>. Consequently, no saved results are available to <code>a\test_two</code>.</p></li><li><p><code>c\test_one</code> is also not in the same run, and like <code>b\test_one</code> has the same parent runs in common: <code>a\test_two (dir1, a1)</code> and <code>a\test_two (dir1, a2)</code> depend on <code>c\test_one (dir1)</code>, while <code>a\test_two (dir2, a1)</code> and <code>a\test_two (dir2, a2)</code> depend on <code>c\test_one (dir2)</code>. Unlike <code>b\test_one</code>, this time each dependency is determined by a single run of <code>c\test_one</code>, and so the test's saved results are available to <code>a\test_two</code>. This is verified by asserting that the retrieved values is the same as that received by the <code>$dir_arg</code> parameter.</p></li></ul><p>From this, it is hopefully clear how the dependencies for <code>b\test_two</code> and <code>c\test_two</code> are resolved.</p><p>Now consider the failure of test <code>b\test_one (dir2, b2)</code> when <code>$dir_arg</code> is <code>2</code> and <code>$file_arg</code> is <code>6</code>:</p><ul><li><p><code>b\test_two (dir2, b2)</code> is skipped while the other three runs of <code>b\test_two</code> pass.</p></li><li><p>The failure of <code>b\test_one (dir2, b2)</code> causes the overall failure of <code>b\test_one (dir2)</code>, which causes <code>a\test_two (dir2, a1)</code>, <code>a\test_two (dir2, a2)</code> and <code>c\test_two (dir2)</code> to all be skipped.</p></li></ul><p>We can verify all this by running Dr. Strangetest:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>strangetest --verbose
+<span class="go">Dr. Strangetest</span>
+
+<span class="go">.........FS.S....SS.</span>
+
+
+<span class="go">FAILED: b\test_one (dir2, b2)</span>
+<span class="go">assert(1 === $dir_arg || 5 === $file_arg)</span>
+<span class="go">in test_b.php:19</span>
+
+
+
+<span class="go">SKIPPED: b\test_two (dir2, b2)</span>
+<span class="go">This test depends on &#39;b\test_one (dir2, b2)&#39;, which did not pass</span>
+<span class="go">in test_b.php on line 28</span>
+
+
+
+<span class="go">SKIPPED: c\test_two (dir2)</span>
+<span class="go">This test depends on &#39;b\test_one (dir2)&#39;, which did not pass</span>
+<span class="go">in test_c.php on line 17</span>
+
+
+
+<span class="go">SKIPPED: a\test_two (dir2, a1)</span>
+<span class="go">This test depends on &#39;b\test_one (dir2)&#39;, which did not pass</span>
+<span class="go">in test_a.php on line 27</span>
+
+
+
+<span class="go">SKIPPED: a\test_two (dir2, a2)</span>
+<span class="go">This test depends on &#39;b\test_one (dir2)&#39;, which did not pass</span>
+<span class="go">in test_a.php on line 27</span>
+
+
+
+<span class="go">Seconds elapsed: 0.001</span>
+<span class="go">Memory used: 1.212 MB</span>
+<span class="go">Passed: 15, Failed: 1, Skipped: 4</span>
+</code></pre></div>
+</article></main><footer><p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by/4.0/80x15.png"></a><br>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</p><p>Please open an issue if you find an error in these pages. Fixes are also welcome!</p></footer></body></html>
