@@ -686,9 +686,9 @@ pass. The prerequisite may [set a result](@#setting-a-test-result) as normal.
 ### Depending on Tests That Are Run Multiple Times
 
 Dr. Strangetest's [test fixtures](@test-fixtures) make it possible to [run
-tests multiple times](@test-fixtures#multiple-parameterized-test-execution).
-Dependents may themselves be run multiples times and may declare dependencies
-on prerequisites that may also be run multiple times. How dependencies are
+tests multiple times](@test-fixtures#running-tests-multiple-times). Dependents
+may themselves be run multiples times and may declare dependencies on
+prerequisites that may also be run multiple times. How dependencies are
 resolved depends on the relationship between the two tests.
 
 By default, there is an implicit, top-level test run that comprises all the

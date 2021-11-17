@@ -1,279 +1,158 @@
 # Test Fixtures
 
-A test's "fixture" is the initial state of the system under test. Setting this
-up is usually repetitive drudgery and may often constitute the majority of the
-work when writing your tests. It's therefore desirable to centralize this work
-in a fixture setup function. Tests using the same fixture can then be grouped
-together and obtain their fixture from this common setup function.
+A test "fixture" is a controlled environment in which a system is tested, and
+it includes initializing the system to a state suitable for testing. Setting
+this up is usually repetitive drudgery and may often constitute the majority of
+the work when writing your tests. It's therefore desirable to centralize this
+work into one or more fixture setup function. Tests that require the same
+fixture can then be grouped together and use these common functions to
+initialize their environment.
 
 You may also need to clean up, or "teardown", your test fixture after testing.
 Since PHP is garbage collected this is usually unnecessary, but if you're
 working with external resources -- opening a file handle, setting a global
 configuration variable, etc. -- you need to do some clean up.
 
-Fixture can be managed at different levels of "granularity". Most of the time
-you want to recreate it from scratch for each test. This is to ensure, as much
-as possible, the outcome of each test depends only on its fixture and not on
-other tests or external phenomena, a concept often called "test isolation".
-In practice, creating entirely new fixture for each test isn't always possible
-or even, at times, desirable. In these cases, we want to be able to manage
-fixture that is shared among several tests.
+Most of the time you want to recreate your test fixture from scratch for each
+test. This is to ensure, as much as possible, the outcome of each test depends
+only on its fixture and not on other tests or external phenomena, a concept
+called "test isolation". In practice, creating an entirely new fixture for each
+test isn't always possible or even, at times, desirable. In these cases, being
+able to manage test fixture at different levels of "granularity" is useful so
+that different fixture components can be reused among a common set of tests.
 
 
 ## Fixture Functions
 
-EasyTest offers a number of functions to manage your test fixtures. This is
-perhaps most clearly laid out with an example:
+Dr. Strangetest offers a number of functions to manage your test fixture. Just
+write them into your test files and Dr. Strangetest will discover and use them
+just as it does your tests. Setup functions are run before your tests and are
+used to set up your test environment to a desired initial condition. Teardown
+functions are run after your tests and perform any needed cleanup. Teardown
+functions are run regardless of the outcome of a test, although if a setup
+function throws an exception, its associated tests and corresponding teardown
+function are skipped.
+
+The functions described below are all discovered without regard to case.
+Although function names are given in snake\_case, they're also recognized if
+underscores are omitted. Many of the functions need only begin with the listed
+name and may otherwise have arbitrary names, making the use of namespaces
+optional. If conflicting setup and/or teardown names are ever found, an error
+is reported and the associated tests are skipped.
+
+
+### Test-Specific Teardown
+
+Test-specific teardown allows an individual test function to register teardown
+functions that will be run after the test completes. This is implemented
+through the `strangetest\Context` interface, an instance of which is provided
+as the last argument to every test function and test method. The interface
+provides the following method:
 
 ```php
-<?php
-// test_fixtures/setup.php
-
-namespace directory;
-
-
-function setup() {
-    echo __FILE__;
-}
-
-function teardown() {
-    echo __FILE__;
-}
+public function strangetest\Context::teardown(callable $callback): void
 ```
 
-```php
-<?php
-// test_fixtures/test.php
+`$callback` is a callable that should take no parameters and return `void`.
 
-namespace file;
+Calling this method multiple times will register multiple teardown functions.
 
-use function easytest\fail;
-use easytest\Context;
+Upon completion of the test, each callback is run in the reverse order in which
+it was registered, after which it is disposed of.
 
 
-function setup_file() {
-    echo __FILE__;
-}
+### Method Setup and Teardown
 
-function teardown_file() {
-    echo __FILE__;
-}
+If a test class defines a public method named `setup`, that method is run
+before every test method.
 
+If a test class defines a public method named `teardown`, that method is run
+after every test method.
 
-function setup() {
-    echo __FUNCTION__;
-}
 
-function teardown() {
-    echo __FUNCTION__;
-}
+### Object Setup and Teardown
 
+If a test class defines a public method named `setup_object`, that method is
+run after an object instance is instantiated and before any other method.
 
-function test_one(Context $context) {
-    $context->teardown(function() { echo __FUNCTION__; });
-    fail('Execution stops here.');
-    echo __FUNCTION__, "\n";
-}
+If a test class defines a public method named `teardown_object`, that method is
+run after running all of the object's tests.
 
-function test_two() {
-    echo __FUNCTION__;
-}
 
+### Function Setup and Teardown
 
-class Test {
-    public function __construct() {
-        echo __METHOD__;
-    }
+If a test file defines a function whose name begins with `setup` (and doesn't
+also match other file function names given below), that function is run before
+every test function.
 
+If a test file defines a function whose name begins with `teardown` (and
+doesn't match other file function names given below), that function is run
+after every test function.
 
-    function setup_object() {
-        echo __METHOD__;
-    }
 
-    function teardown_object() {
-        echo __METHOD__;
-    }
+### File Setup and Teardown
 
+If a test file defines a function whose name begins with `setup_file`, that
+function is run before running any other function or instantiating any other
+class in the file.
 
-    function setup() {
-        echo __METHOD__;
-    }
+If a test file defines a function whose name begins with `teardown_file`, that
+function is run after finishing all tests in the file.
 
-    function teardown() {
-        echo __METHOD__;
-    }
+If a test file defines functions whose name begins with `setup_run`, each
+function defines a new [test run](@#running-tests-multiple-times). A
+`setup_run` function may have a matching `teardown_run` function, but such a
+function cannot exist on its own.
 
+Test runs are run in an arbitrary order. Each run calls `setup_run`, then runs
+every test in the file, and then calls the matching `teardown_run` (if there is
+one). `setup_file` is called before the first test run and `teardown_file` is
+called after the last one.
 
-    function test_one(Context $context) {
-        $context->teardown(function() { echo __FUNCTION__; });
-        fail('Execution stops here.');
-        echo __METHOD__, "\n";
-    }
 
-    function test_two() {
-        echo __METHOD__;
-    }
-}
-```
+### Directory Setup and Teardown
 
-Running EasyTest shows the order and frequency with which everything happens:
+If a test directory contains a file named `setup.php`, it is the first file
+included and it is searched for the fixture functions described below. It is
+not required to define fixture functions in this file, as the file may also
+define (or include) definitions needed by your test suite. The file is **not**
+searched for test names.
 
-    $ easytest --verbose
+If `setup.php` defines a function whose name begins with `setup`, that function
+is run prior to running any tests in the directory (or subdirectories).
 
-    OOOFOOOOO.OOOFOOOOO.OOO
+If `setup.php` defines a function whose name begins with `teardown`, that
+function is run after completing all tests in the directory (as well as any
+subdirectories) and prior to ascending out of the directory.
 
+If `setup.php` defines functions whose name begins with `setup_run`, each
+function defines a new [test run](@#running-tests-multiple-times). A
+`setup_run` function may have a matching `teardown_run` function, but such a
+function cannot exist on its own.
 
-    OUTPUT: directory\setup
-    test_fixtures/setup.php
-
-
-
-    OUTPUT: file\setup_file
-    test_fixtures/test.php
-
-
-
-    OUTPUT: setup for file\test_one
-    file\setup
-
-
-
-    FAILED: file\test_one
-    Execution stops here.
-
-    in test_fixtures/test.php on line 30
-
-
-
-    OUTPUT: file\test_one
-    file\{closure}
-
-
-
-    OUTPUT: teardown for file\test_one
-    file\teardown
-
-
-
-    OUTPUT: setup for file\test_two
-    file\setup
-
-
-
-    OUTPUT: file\test_two
-    file\test_two
-
-
-
-    OUTPUT: teardown for file\test_two
-    file\teardown
-
-
-
-    OUTPUT: file\Test
-    file\Test::__construct
-
-
-
-    OUTPUT: file\Test::setup_object
-    file\Test::setup_object
-
-
-
-    OUTPUT: setup for file\Test::test_one
-    file\Test::setup
-
-
-
-    FAILED: file\Test::test_one
-    Execution stops here.
-
-    in test_fixtures/test.php on line 65
-
-
-
-    OUTPUT: file\Test::test_one
-    file\{closure}
-
-
-
-    OUTPUT: teardown for file\Test::test_one
-    file\Test::teardown
-
-
-
-    OUTPUT: setup for file\Test::test_two
-    file\Test::setup
-
-
-
-    OUTPUT: file\Test::test_two
-    file\Test::test_two
-
-
-
-    OUTPUT: teardown for file\Test::test_two
-    file\Test::teardown
-
-
-
-    OUTPUT: file\Test::teardown_object
-    file\Test::teardown_object
-
-
-
-    OUTPUT: file\teardown_file
-    test_fixtures/test.php
-
-
-
-    OUTPUT: directory\teardown
-    test_fixtures/setup.php
-
-
-
-    Seconds elapsed: 0.001
-    Memory used: 1.253 MB
-    Passed: 2, Failed: 2, Output: 19
-
-As you can see, execution of a test stops when an assertion fails or on any
-error. Teardown functions run regardless of whether or not a test completes.
-Teardown functions are only skipped if a corresponding setup function does not
-complete. This could happen because of an error in the setup function or
-because `easytest\skip` was called. If a setup function does not complete, the
-item being setup (function, class, file, etc.) is skipped.
-
-Of note is the `setup.php` file, which sets up and tears down a directory of
-tests. Whenever EasyTest enters a new directory, it looks for this file and,
-if found, includes it before any others. It then searches this file for
-directory setup and teardown functions. If either of these functions are
-found, `setup` is run before continuing to discover the directory and
-`teardown` is run just prior to ascending out of the directory. This file may
-also include definitions needed for the tests in the current directory and
-need not even define directory fixture functions at all.
-
-EasyTest matches fixture functions without regards to case and matches on both
-CamelCase and snake\_case. Fixture functions are recognized if their name
-begins with the names shown in the example above. Fixture method names must
-match exactly, e.g., an object setup method needs to be a case-insensitive
-match to either `setup_obect` or `SetupObject`. If multiple setup and/or
-teardown functions are ever found, an error is reported and the associated
-item is skipped.
+Test runs are run in an arbitrary order. Each run calls `setup_run`, then runs
+every test in the directory, and then calls the matching `teardown_run` (if
+there is one). `setup` is called before the first run and `teardown` is called
+after the last one.
 
 
 ## Managing Resources
 
-One of the most straightforward uses of fixture functions is to manage and
-cleanup resources that may persist beyond the lifetime of a test.
+One of the most straightforward uses of fixture functions is to manage
+resources that may persist beyond the lifetime of a test if not properly
+cleaned up. Some typical examples include files created on the filesystem,
+configuration of global settings and variables, and connections to external
+services such as a database.
 
-As a basic example, consider a situation where you'd like to test a function's
+Another common example is a situation where you'd like to test a function's
 output using PHP's output buffering:
 
 ```php
-function test_buffering() {
+function test_output()
+{
     ob_start();
     produce_output();
-    easytest\assert_identical('Expected output', ob_get_contents());
+    assert('Expected output' === ob_get_contents());
     ob_end_clean();
 }
 ```
@@ -286,102 +165,130 @@ If this is the only test using an output buffer, we can ensure the buffer is
 deleted by using a test-specific teardown function:
 
 ```php
-function test_buffering(easytest\Context $context) {
+function test_output(strangetest\Context $context)
+{
     ob_start();
     $context->teardown('ob_end_clean');
     produce_output();
-    easytest\assert_identical('Expected output', ob_get_contents());
+    assert('Expected output' === ob_get_contents());
 }
 ```
 
 If an output buffer is needed by multiple tests, we can move management of the
-buffer into separate setup and teardown functions:
+buffer into function fixture functions which are run before and after every
+test function:
 
 ```php
-function setup() {
+function setup()
+{
     ob_start();
 }
 
-function teardown() {
+function teardown()
+{
     ob_end_clean();
 }
 
-function test_buffering() {
+function test_output()
+{
     produce_output();
-    easytest\assert_identical('Expected output', ob_get_contents());
+    assert('Expected output' === ob_get_contents());
+}
+
+function test_more_output()
+{
+    produce_more_output();
+    assert('More expected output' === ob_get_contents());
 }
 ```
 
 
-## Providing Fixtures to Tests
+## Providing State to Tests
 
-You may have noticed that EasyTest's fixture functions form a natural
-hierarchy with directories at the top and individual tests at the bottom.
-Setup functions higher in the hierarchy can pass state to setup functions
-and/or tests lower in the hierarchy by returning an array of arguments. As
-EasyTest performs discovery, these arguments are unpacked and automatically
-passed to subordinate fixture functions, class constructors, and test
-functions, which accept them by adding parameters to their signature.
+Dr. Strangetest's fixture functions form a hierarchy with directories at the
+top and individual tests at the bottom. Setup functions can provide state to
+functions lower in the hierarchy by returning an array of items, which will be
+unpacked and provided as arguments to subordinate fixture functions, class
+constructors, and test functions. These subordinate functions accept them by
+adding parameters to their signature.
 
 Subordinate setup functions "intercept" state from higher setup functions.
-Whatever these functions return replaces whatever arguments are passed to it.
-This is true regardless of whether or not a function explicitly accepts the
-arguments provided to it. Functions may add to, remove from, alter or simply
-pass through the arguments they receive. If a setup function is not defined at
-a particular level in the hierarchy, arguments are passed directly to the next
+Whatever these subordinate functions return replaces whatever state is passed
+to it. This is true regardless of whether or not a function explicitly accepts
+the state provided to it. Functions may add to, remove from, alter or simply
+pass through the state they receive. If a setup function is not defined at a
+particular level in the hierarchy, state is passed directly to the next
 subordinate setup function, test function or test class.
 
-Arguments are also passed to teardown functions, but these functions never
-return arguments, they only clean up the arguments given to them.
+State is also passed to teardown functions, but these functions never return
+any, they only clean up the state given to them. Teardown functions receive
+either the state returned by their corresponding setup function, if there is
+one, or the state that would have been passed to the corresponding setup
+function.
 
-Let's consider an example where we wish to share a common database connection
-among a directory of tests:
+Inside of a object, things work a little differently. Since an object's methods
+all have access to their object's shared state, fixture methods can directly
+initialize this state, which other test methods can then access. Consequently,
+state is never explicitly passed around within an object. Objects can receive
+external state in their constructor, which it can use to initialize the object.
+
+Consider an example where a common database connection is shared among a
+directory of tests:
 
 ```php
-<?php
+<?php declare(strict_types=1);
 // setup.php
 
-namespace test\database;
+namespace test;
 
 use example\Database;
 
-function setup() {
+function setup(): array
+{
     $database = new Database();
     $database->createDatabase();
     return [$database];
 }
 
-function teardown(Database $database) {
+function teardown(Database $database): void
+{
     $database->deleteDatabase();
 }
 ```
 
-In one of our test files, we might have the following:
+One of the directory's test files might have the following:
+
 
 ```php
-<?php
+<?php declare(strict_types=1);
 // test.php
 
-use function easytest\assert_identical;
+namespace test;
 use example\Database;
+use function strangetest\assert_identical;
 
-class TestDatabase {
-    private $database;
+class TestDatabase
+{
+    private Database $database;
 
-    function __construct(Database $database) {
+    public function __construct(Database $database)
+    {
         $this->database = $database;
     }
 
-    function setup() {
+    public function setup(): void
+    {
         $this->database->reset();
     }
 
-    function testInsertRecord() {
+    public function testInsertRecord(): void
+    {
         $this->database->insertRecord([1, 2]);
         assert_identical([[1, 2]], $this->database->records());
     }
 
-    function testDeleteRecord() {
+    public function testDeleteRecord(): void
+    {
         $id = $this->database->insertRecord([1, 2]);
         assert_identical([[1, 2]], $this->database->records());
 
@@ -389,35 +296,38 @@ class TestDatabase {
         assert_identical([], $this->database->records());
     }
 }
+
 ```
 
-In the above example, since there is no file setup function, the arguments
-returned from `test\database\setup` are provided to `TestDatabaseActions`.
-Once passed to a constructor, the test fixture is directly accessible from the
-test object's shared state. Consequently, object fixture methods never return
-or receive parameters. However, you could also write your test using
-functions:
+In the above example, since there is no file setup function, the state returned
+from `test\setup` is provided directly to `test\TestDatabase`. Once passed to a
+constructor, the state becomes available from within a test object as part of
+the object's shared state. Consequently, fixture methods never return or
+receive state. However, you could also write your test using functions:
 
 ```php
-<?php
+<?php declare(strict_types=1);
 // test.php
 
-namespace test\database\actions;
+namespace test\database;
 
-use function easytest\assert_identical;
 use example\Database;
+use function strangetest\assert_identical;
 
-function setup(Database $database) {
+function setup(Database $database): array
+{
     $database->reset();
     return [$database];
 }
 
-function test_insert_record(Database $database) {
+function test_insert_record(Database $database): void
+{
     $database->insertRecord([1, 2]);
     assert_identical([[1, 2]], $database->records());
 }
 
-function test_delete_record(Database $database) {
+function test_delete_record(Database $database): void
+{
     $id = $database->insertRecord([1, 2]);
     assert_identical([[1, 2]], $database->records());
 
@@ -426,42 +336,45 @@ function test_delete_record(Database $database) {
 }
 ```
 
-In the above example, the arguments returned from `test\database\setup` are
-provided to `test\database\actions\setup`, which in turn returns arguments
-that are provided to each test. If more setup or teardown is needed, you can
-add the necessary functions and they will receive the arguments:
+In this case, the state returned from `test\setup` is provided to
+`test\database\setup`, which then returns state that is provided to each test.
+If more setup or teardown is needed, you can add the necessary functions and
+state is automatically provided to them.
 
 ```php
-<?php
+<?php declare(strict_types=1);
 // test.php
 
-namespace test\database\actions;
+namespace test\database;
 
-use function easytest\assert_identical;
 use example\Database;
+use function strangetest\assert_identical;
 
-
-function setup_file(Database $database) {
+function setup_file(Database $database): array
+{
     $database->loadTestData();
     return [$database];
 }
 
-function teardown_file(Database $database) {
+function teardown_file(Database $database): void
+{
     $database->clearTestData();
 }
 
-
-function setup(Database $database) {
+function setup(Database $database): array
+{
     $database->reset();
     return [$database];
 }
 
-function test_insert_record(Database $database) {
+function test_insert_record(Database $database): void
+{
     $database->insertRecord([1, 2]);
     assert_identical([[1, 2]], $database->records());
 }
 
-function test_delete_record(Database $database) {
+function test_delete_record(Database $database): void
+{
     $id = $database->insertRecord([1, 2]);
     assert_identical([[1, 2]], $database->records());
 
@@ -470,43 +383,49 @@ function test_delete_record(Database $database) {
 }
 ```
 
-You could do the same thing if you organized your tests in a class, but in
-this case, it might make more sense to use object fixture methods:
+You can do the same thing if you organized your tests in a class, but in this
+case you might replace the file fixture functions with object fixture methods:
 
 ```php
-<?php
+<?php declare(strict_types=1);
 // test.php
 
-use function easytest\assert_identical;
+namespace test;
 use example\Database;
+use function strangetest\assert_identical;
 
-class TestDatabase {
-    private $database;
+class TestDatabase
+{
+    private Database $database;
 
-    function __construct(Database $database) {
+    public function __construct(Database $database)
+    {
         $this->database = $database;
     }
 
-
-    function setupObject() {
+    public function setupObject(): void
+    {
         $this->database->loadTestData();
     }
 
-    function teardownObject() {
+    public function teardownObject(): void
+    {
         $this->database->clearTestData();
     }
 
-    function setup() {
+    public function setup(): void
+    {
         $this->database->reset();
     }
 
-
-    function testInsertRecord() {
+    public function testInsertRecord(): void
+    {
         $this->database->insertRecord([1, 2]);
         assert_identical([[1, 2]], $this->database->records());
     }
 
-    function testDeleteRecord() {
+    public function testDeleteRecord(): void
+    {
         $id = $this->database->insertRecord([1, 2]);
         assert_identical([[1, 2]], $this->database->records());
 
@@ -516,59 +435,59 @@ class TestDatabase {
 }
 ```
 
-In the above examples, notice that a setup function's return value replaces
-whatever arguments may have existed before it. If you define a setup function,
-it **MUST** accept and pass on the arguments it receives if those arguments
-are needed at lower levels.
+The state returned by a setup function replaces whatever state may have existed
+before it. If you define a setup function, it **MUST** accept and pass on the
+arguments it receives if those arguments are needed at lower levels.
 
-Let's expand on the database example:
+Expanding on the database example:
 
 ```php
-<?php
+<?php declare(strict_types=1);
 // test_orders.php
 
-namespace test\database\orders;
+namespace test\orders;
 
-use function easytest\assert_true;
 use example\Database;
 use example\OrderManager;
 use example\PaymentProcessor;
+use function strangetest\assert_true;
 
-function setup_file() {
+function setup_file(): array
+{
     $processor = new PaymentProcessor();
     $processor->setTestMode();
     return [$processor];
 }
 
-
-function setup(Database $database, PaymentProcessor $processor) {
+function setup(Database $database, PaymentProcessor $processor): array
+{
     return [new OrderManager($database, $processor)];
 }
 
-
-function test(OrderManager $order) {
+function test(OrderManager $order): void
+{
     $order->placeOrder();
     assert_true($order->wasPlaced());
 }
 ```
 
-The above example results in an error because
-`test\database\orders\setup_file` removes the `Database` argument provided by
-`test\database\setup` which is needed by `test\database\orders\setup`. A fixed
-example:
+The above example results in an error because `test\orders\setup_file` removes
+the `Database` argument provided by `test\setup`, which is needed by
+`test\orders\setup`. A fixed example:
 
 ```php
-<?php
+<?php declare(strict_types=1);
 // test_orders.php
 
-namespace test\database\orders;
+namespace test\orders;
 
-use function easytest\assert_true;
 use example\Database;
 use example\OrderManager;
 use example\PaymentProcessor;
+use function strangetest\assert_true;
 
-function setup_file(Database $database) {
+function setup_file(Database $database): array
+{
     $database->loadTestData();
 
     $processor = new PaymentProcessor();
@@ -577,208 +496,169 @@ function setup_file(Database $database) {
     return [$database, $processor];
 }
 
-function teardown_file(Database $database, PaymentProcessor $processor) {
+function teardown_file(Database $database, PaymentProcessor $_): void
+{
     $database->clearTestData();
 }
 
-
-function setup(Database $database, PaymentProcessor $processor) {
+function setup(Database $database, PaymentProcessor $processor): array
+{
     $database->reset();
     return [new OrderManager($database, $processor)];
 }
 
-
-function test(OrderManager $order) {
+function test(OrderManager $order): void
+{
     $order->placeOrder();
     assert_true($order->wasPlaced());
 }
 ```
 
-In both of the above examples, `test\database\orders\setup` uses the
-`Database` and `PaymentProcessor` arguments it receives to instantiate and
-return an `OrderManager`. The returned `OrderManager` replaces the `Database`
-and `PaymentProcessor` arguments and is provided to each test.
 
+## Running Tests Multiple Times
 
-## Multiple Parameterized Test Execution
+Run fixture functions let you run your tests multiple times using different
+arguments. This might be useful if you have multiple implementations of a
+service and you want to ensure client code behaves identically regardless of
+the service implementation that's used. Run fixture functions may be used in a
+directory's `setup.php` to run all tests in that directory multiple times, or
+within a test file to run all tests in that file multiple times.
 
-Continuing with the previous example, let's assume we want to support multiple
-database and payment processor backends. Client code (in our example,
-`OrderManager`) should function identically regardless of the backend. To
-ensure this, we'd like to run the same tests against the various database and
-payment processor backends we support.
+Run setup functions are functions whose name begins with `setup_run_`. The
+remainder of the function name is used to name the test run, which is used in
+the test report when displaying outcomes specific to the run. For example,
+given a run setup function named `setup_run_foo`, a test that fails the run
+will be identified in the test report as:
 
-EasyTest supports this by providing a pair of fixture functions not previously
-mentioned: `setup_runs` and `teardown_runs`. These functions may be defined in
-a test file and/or in a test directory's `setup.php`. `setup_runs` should
-return an iterable of arrays, and EasyTest will run subordinate tests once
-with each array of arguments. In the hierarchy of fixture functions,
-`setup_runs` is run *before* file and directory setup functions and
-`teardown_runs` is run *after* file and directory teardown functions, meaning
-that directory and file fixture functions are run once for each set of
-arguments returned by `setup_runs`.
+    FAILED: test (foo)
+
+If Dr. Strangetest is unable to determine a unique run name from a run setup
+function, an error is reported and the run is skipped.
+
+Run teardown functions can also be defined, but they cannot exist on their own,
+they must defined in conjunction with a run setup function. Run teardown
+functions are functions whose name begins with `teardown_run_`. The remainder
+of the function name must match a run name defined by a run setup function. The
+run teardown function is passed whatever state is returned by its corresponding
+setup function.
+
+Like other setup fixtures, run setup functions are provided with the current
+test state. Unlike other setup fixtures, run setup functions **MUST** return
+state. The expectation is that multiple run fixture functions will be defined
+with each returning different state for use in subordinate tests. This means,
+of course, that each function must return state.
+
+Continuing with the previous example, assume there are multiple database and
+payment processor backends that we want to support, and we want to ensure
+behavior is the same regardless of the backends being used. With run fixture
+functions, we can run our tests with every combination of database and payment
+processor.
 
 ```php
-<?php
+<?php declare(strict_types=1);
 // setup.php
 
-namespace test\database;
+namespace test;
 
 use example\DatabaseX;
 use example\DatabaseY;
 
-function setup_runs() {
-    $db1 = new DatabaseX();
-    $db1->createDatabase();
-
-    $db2 = new DatabaseY();
-    $db2->createDatabase();
-
-    return [
-        'database x' => [$db1],
-        'database y' => [$db2],
-    ];
+function setup_run_database_x(): array
+{
+    $database = new DatabaseX();
+    $database->createDatabase();
+    return [$database];
 }
 
-function teardown_runs(array $args) {
-    $args['database x'][0]->deleteDatabase();
-    $args['database y'][0]->deleteDatabase();
+function teardown_run_database_x(DatabaseX $database): void
+{
+    $database->deleteDatabase();
+}
+
+function setup_run_database_y(): array
+{
+    $database = new DatabaseY();
+    $database->createDatabase();
+    return [$database];
+}
+
+function teardown_run_database_y(DatabaseY $database): void
+{
+    $database->deleteDatabase();
 }
 ```
 
 ```php
-<?php
+<?php declare(strict_types=1);
 // test_orders.php
 
-namespace test\database\orders;
+namespace test\orders;
 
-use function easytest\assert_true;
 use example\Database;
 use example\OrderManager;
 use example\PaymentProcessor;
 use example\PaymentProcessorA;
 use example\PaymentProcessorB;
+use function strangetest\assert_true;
 
-function setup_runs(Database $database) {
+function setup_file(Database $database): array
+{
     $database->loadTestData();
-
-    $processor1 = new PaymentProcessorA();
-    $processor1->setTestMode();
-
-    $processor2 = new PaymentProcessorB();
-    $processor2->setTestMode();
-
-    return [
-        'processor a' => [$database, $processor1],
-        'processor b' => [$database, $processor2],
-    ];
+    return [$database];
 }
 
-function teardown_runs(array $args) {
-    // both payment processors use the same database, so only clear it out once
-    $database = $args['processor a'][0];
+function teardown_file(Database $database): void
+{
     $database->clearTestData();
 }
 
-
-function setup(Database $database, PaymentProcessor $processor) {
-    $database->reset();
-    return [new OrderManager($database, $processor)];
-}
-
-
-function test(OrderManager $order) {
-    $order->placeOrder();
-    assert_true($order->wasPlaced());
-}
-```
-
-`test` is now run four times using every combination of database and payment
-processor. If an error or failure occurs, the failed run is identified using
-the keys of the iterable return by `setup_runs`. In this example, a failure of
-`test` might be identified as:
-
-    FAILED: test (database x, processor b)
-
-Unlike other teardown fixture functions, EasyTest does not unpack the iterable
-returned by `setup_runs` when calling `teardown_runs`. This is because
-EasyTest only traverses the iterator once, thus supporting the use of
-generators and other non-rewindable iterators. This might be desirable if the
-setup for each run is costly in terms of resources.
-
-In the following example, generators are used so that only one database and
-one payment processor are created at a time. Because `teardown_runs` would
-received an expended generator, directory and file fixtures are used to setup
-and teardown the resources used for each run.
-
-```php
-<?php
-// setup.php
-
-namespace test\database;
-
-use example\Database;
-use example\DatabaseX;
-use example\DatabaseY;
-
-function setup_runs() {
-    $db = new DatabaseX();
-    yield 'database x' => [$db];
-
-    $db = new DatabaseY();
-    yield 'database y' => [$db];
-}
-
-function setup(Database $db) {
-    $db->createDatabase();
-    return [$db];
-}
-
-function teardown(Database $db) {
-    $db->deleteDatabase();
-}
-```
-
-```php
-<?php
-// test_orders.php
-
-namespace test\database\orders;
-
-use function easytest\assert_true;
-use example\Database;
-use example\OrderManager;
-use example\PaymentProcessor;
-use example\PaymentProcessorA;
-use example\PaymentProcessorB;
-
-function setup_runs(Database $database) {
+function setup_run_processor_a(Database $database): array
+{
     $processor = new PaymentProcessorA();
-    yield 'processor a' => [$database, $processor];
-
-    $processor = new PaymentProcessorB();
-    yield 'processor b' => [$database, $processor];
-}
-
-
-function setup_file(Database $database, PaymentProcessor $processor) {
-    $database->loadTestData();
     $processor->setTestMode();
     return [$database, $processor];
 }
 
-function teardown_file(Database $database, PaymentProcessor $processor) {
-    $database->clearTestData();
+function setup_run_processor_b(Database $database): array
+{
+    $processor = new PaymentProcessorB();
+    $processor->setTestMode();
+    return [$database, $processor];
 }
 
-
-function setup(Database $database, PaymentProcessor $processor) {
+function setup(Database $database, PaymentProcessor $processor): array
+{
     $database->reset();
     return [new OrderManager($database, $processor)];
 }
 
-
-function test(OrderManager $order) {
+function test(OrderManager $order): void
+{
     $order->placeOrder();
-    assert_true($order->wasPlaced());
+    assert_true($order->wasPlaced(), 'Order was not placed');
 }
+```
+
+If any of the runs fail, it will be identified in the test report.
+
+```
+$ strangetest
+Dr. Strangetest
+
+.F..
+
+
+FAILED: test\orders\test (database_x, processor_b)
+Assertion "$actual === true" failed
+Order was not placed
+
+$actual = false
+
+in tests/test_orders.php on line 47
+
+
+
+Seconds elapsed: 0.001
+Memory used: 1.212 MB
+Passed: 3, Failed: 1
+```

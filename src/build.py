@@ -342,7 +342,7 @@ def check_urls(site):
                 fragment = parts[1]
                 page = path if path else link.file
                 assert fragment in site.index[page], \
-                    "File {}:{} links to {}#{}, but there is matching id on that page".format(
+                    "File {}:{} links to {}#{}, but there is no matching id on that page".format(
                         link.file, link.line, page, fragment)
                 fragment = f'#{fragment}'
             else:
