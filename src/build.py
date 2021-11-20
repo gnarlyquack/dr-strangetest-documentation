@@ -30,7 +30,7 @@ sections = (
             'getting-started',
             'writing-tests',
             'test-fixtures',
-            'writing-assertions',
+            'assertions',
         ),
     ),
     Section(
@@ -305,17 +305,14 @@ def add_toc_entry(toc, level, name, url):
         toc.heading_level += 1
         toc.stack.append(toc.toc)
         toc.toc = toc.heading.subheadings
-        toc.heading = heading
     elif level < toc.heading_level:
         while level < toc.heading_level:
             assert toc.stack
             toc.heading_level -= 1
             toc.toc = toc.stack.pop()
         assert toc.stack
-        toc.heading = toc.stack[-1][-1]
-    else:
-        toc.heading = heading
 
+    toc.heading = heading
     toc.toc.append(heading)
 
 

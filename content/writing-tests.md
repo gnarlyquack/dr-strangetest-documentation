@@ -162,14 +162,11 @@ function testHelloToTheWorld()
 }
 ```
 
-Dr. Strangetest's assertions will generally provide more detailed information
-about why the assertion failed than PHP's `assert` does, but they are by no
-mean comprehensive. `assert` provides a means to make any assertion you want,
-although [writing your own assertions](@writing-assertions) is also
-straightforward.
-
-A full list of Dr. Strangetest's assertions is listed in the
-[README](https://github.com/gnarlyquack/strangetest).
+[Dr. Strangetest's assertions](@assertions#dr-strangetests-assertions) will
+generally provide more detailed information about why the assertion failed than
+PHP's `assert` does, but they are by no mean comprehensive. `assert` provides a
+means to make any assertion you want, and of course you can always [write your
+own](@assertions#writing-custom-assertions).
 
 
 ## Testing Exceptions and Errors

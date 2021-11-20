@@ -18,7 +18,6 @@ In addition to this wiki, you may also want to consult the
    tells you everything you need to know about writing tests.
 3. [Test Fixtures](@test-fixtures)
    explains how EasyTest lets you to manage your tests' state.
-4. [Writing Assertions](@writing-assertions)
-   provides a comprehensive example on how to implement your own assertion if
-   EasyTest doesn't provide the assertion you want and/or using PHP's `assert`
-   is impractical.
+4. [Assertions](@assertions) provides a comprehensive example on how to
+   implement your own assertion if EasyTest doesn't provide the assertion you
+   want and/or using PHP's `assert` is impractical.
