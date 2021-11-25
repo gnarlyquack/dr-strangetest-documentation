@@ -28,6 +28,7 @@ sections = (
         index = 'documentation',
         pages = (
             'getting-started',
+            'running-tests',
             'writing-tests',
             'test-fixtures',
             'assertions',
