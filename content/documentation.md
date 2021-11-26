@@ -1,23 +1,20 @@
-Welcome to EasyTest, a testing framework for PHP.
-
-EasyTest attempts to minimize boilerplate while remaining latitudinarian about
-how you write your tests. To this end, tests are normal PHP functions and
-classes, and anything whose name starts with `test` is automatically
-discovered and run. Other features include: support of PHP's `assert`
-function, subtests, test dependencies, hierarchical management of test
-fixture, and multiple execution of tests with parameterized arguments.
-
-In addition to this wiki, you may also want to consult the
-[README](https://github.com/gnarlyquack/easytest).
+Welcome to Dr. Strangetest's user manual. Everything you might want to know
+(and perhaps then some) are contained within these pages.
 
 # Contents
 
-1. [Getting Started](@getting-started)
-   will get you up and running with EasyTest.
-2. [Writing Tests](@writing-tests)
-   tells you everything you need to know about writing tests.
-3. [Test Fixtures](@test-fixtures)
-   explains how EasyTest lets you to manage your tests' state.
-4. [Assertions](@assertions) provides a comprehensive example on how to
-   implement your own assertion if EasyTest doesn't provide the assertion you
-   want and/or using PHP's `assert` is impractical.
+1.  [Getting Started](@getting-started) walks you through getting Dr.
+    Strangetest installed onto your system.
+
+2.  [Running Tests](@running-tests) describes how to select and run your tests
+    on the command line, as well as how Dr. Strangetest configures PHP to
+    ensure your tests run properly.
+
+3.  [Writing Tests](@writing-tests) covers how to write tests and some of Dr.
+    Strangetest's more advanced testing features.
+
+4.  [Test Fixtures](@test-fixtures) explains how to manage your test state and
+    provide it to your tests.
+
+5.  [Assertions](@assertions) discusses PHP's `assert`, Dr. Strangetest's
+    assertions, and writing your own assertions.
