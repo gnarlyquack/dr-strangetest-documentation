@@ -1,93 +1,45 @@
-Contributing
-============
+# Contributing
 
-Thank you for taking an interest in contributing to EasyTest! I appreciate
-that you're thinking about contributing your time to improving the project,
-and it's my goal to respect your contribution accordingly.
+If you are thinking about contributing to Dr. Strangetest, please don't
+hesitate! Every little bit helps, so contributions are greatly welcome and much
+appreciated. The lifeblood of open source is the involvement of community, and
+this project endeavors to encourage and respect all contributions as well as
+their contributors.
 
-Although this document focuses on code contributions, you can contribute in
-several ways:
-
--   File a bug report.
-
--   Add or improve documentation.
-
--   Promote the project to others.
+Some of the ways in which you can contribute are listed below.
 
 
-Contributing Code
------------------
+## Promote the Project to Others
 
--   Pick an open issue to work on.
+If you like Dr. Strangetest and find it useful, let others know! Whether
+through verbal recommendation, a shout-out on social media, or a write-up on
+your blog, spreading the word can go a long way towards helping build and grow
+the community.
 
-    -   If there isn't an open issue, I recommend you first open one before
-        starting so we can discuss your intended work.
 
--   Install EasyTest for development.
+## Report Bugs or Missing Features
 
-    -   Ensure your system meets the requirements listed in README.txt.
+If you think you've found a bug in the software, please report it. Or if you
+think there's an important feature that's missing, feel free to make a
+suggestion and start a discussion. Both can be done using Dr.  Strangetest's
+[issue tracker](https://github.com/gnarlyquack/easytest).
 
-    -   Clone the repository to your computer.
 
-    -   Change into EasyTest's root source directory and run its tests:
+## Improve Documentation
 
-            ./bin/easytest
+Documentation, it seems, is always a work in progress. If you find something
+that's incorrect, incomplete, out of date, or confusing, or an example is
+missing or could be improved, you can [open an
+issue](https://github.com/gnarlyquack/easytest) to report a deficiency or
+suggest an improvement. Or if you have some writing chops you'd like to flex,
+you can update the documentation directly and submit a pull request.
 
-        If you encounter any errors or failures, you may have uncovered a bug!
-        If this is the case, please open an issue.
 
--   Write your code.
+## Participate in Development
 
-    -   Create a topic branch for your work. If working on multiple issues,
-        use a new branch for each issue.
-
-    -   Your changes shouldn't break the requirements listed in README.txt.
-
-    -   Test your work!
-
-    -   Remember to update documentation, if necessary. Specifically:
-        README.txt and CHANGELOG.txt.
-
--   Commit your work.
-
-    -   Clean up your commits! Although your work need not result in a single
-        commit, each commit should represent a logical change.
-
-    -   Write a good commit message.
-        https://chris.beams.io/posts/git-commit/
-
--   Contribute your work.
-
-    -   By contributing your work, you certify the following:
-
-        Developer's Certificate of Origin 1.1
-
-        By making a contribution to this project, I certify that:
-
-        (a) The contribution was created in whole or in part by me and I have
-            the right to submit it under the open source license indicated in
-            the file; or
-
-        (b) The contribution is based upon previous work that, to the best of
-            my knowledge, is covered under an appropriate open source license
-            and I have the right under that license to submit that work with
-            modifications, whether created in whole or in part by me, under
-            the same open source license (unless I am permitted to submit
-            under a different license), as indicated in the file; or
-
-        (c) The contribution was provided directly to me by some other person
-            who certified (a), (b) or (c) and I have not modified it.
-
-        (d) I understand and agree that this project and the contribution are
-            public and that a record of the contribution (including all
-            personal information I submit with it, including my sign-off) is
-            maintained indefinitely and may be redistributed consistent with
-            this project or the open source license(s) involved.
-
-    -   Fork the project to your own GitHub account.
-
-    -   Push your branch to your account.
-
-    -   Use Travis CI to ensure the test suite passes.
-
-    -   Open a pull request.
+Pull requests are always welcome! Head over to [Dr. Strangetest's source
+repository](https://github.com/gnarlyquack/easytest) to obtain the code. It's
+recommended that you make known your intention to work on an issue to avoid
+duplication of effort. For the same reason, if you're not working on an
+existing issue, it's recommended that you first open one to announce and
+potentially discuss the work you intend to do.
