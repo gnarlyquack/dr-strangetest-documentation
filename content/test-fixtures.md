@@ -4,7 +4,7 @@ A test "fixture" is a controlled environment in which a system is tested, and
 it includes initializing the system to a state suitable for testing. Setting
 this up is usually repetitive drudgery and may often constitute the majority of
 the work when writing your tests. It's therefore desirable to centralize this
-work into one or more fixture setup function. Tests that require the same
+work into one or more fixture setup functions. Tests that require the same
 fixture can then be grouped together and use these common functions to
 initialize their environment.
 
@@ -99,24 +99,15 @@ class in the file.
 If a test file defines a function whose name begins with `teardown_file`, that
 function is run after finishing all tests in the file.
 
-If a test file defines functions whose name begins with `setup_run`, each
-function defines a new [test run](@#running-tests-multiple-times). A
-`setup_run` function may have a matching `teardown_run` function, but such a
-function cannot exist on its own.
-
-Test runs are run in an arbitrary order. Each run calls `setup_run`, then runs
-every test in the file, and then calls the matching `teardown_run` (if there is
-one). `setup_file` is called before the first test run and `teardown_file` is
-called after the last one.
-
 
 ### Directory Setup and Teardown
 
 If a test directory contains a file named `setup.php`, it is the first file
-included and it is searched for the fixture functions described below. It is
-not required to define fixture functions in this file, as the file may also
-define (or include) definitions needed by your test suite. The file is **not**
-searched for test names.
+included and it is searched for the fixture functions described below. The file
+is **not** searched for test names. It is not required to define fixture
+functions in this file, as the file may also be used to define (or include)
+definitions needed by your test suite. Note that discovery is **not** performed
+on any file included by `setup.php`.
 
 If `setup.php` defines a function whose name begins with `setup`, that function
 is run prior to running any tests in the directory (or subdirectories).
@@ -125,15 +116,24 @@ If `setup.php` defines a function whose name begins with `teardown`, that
 function is run after completing all tests in the directory (as well as any
 subdirectories) and prior to ascending out of the directory.
 
-If `setup.php` defines functions whose name begins with `setup_run`, each
-function defines a new [test run](@#running-tests-multiple-times). A
-`setup_run` function may have a matching `teardown_run` function, but such a
-function cannot exist on its own.
 
-Test runs are run in an arbitrary order. Each run calls `setup_run`, then runs
-every test in the directory, and then calls the matching `teardown_run` (if
-there is one). `setup` is called before the first run and `teardown` is called
-after the last one.
+### Run Setup and Teardown
+
+Run fixtures let you [run your tests multiple
+times](@#running-tests-multiple-times), once for each run fixture. Run fixtures
+may be defined at the file level and at the directory level. File-level
+fixtures are defined directly in a test file and directory-level fixtures are
+defined in a directory's `setup.php` file.
+
+A run setup fixture is a function whose name begins with `setup_run`. Each
+function defines a new test run, and the portion of the function name after the
+`setup_run` prefix is used as the name of the run. A `setup_run` function may
+have a matching `teardown_run` function, but run teardown functions cannot
+exist on their own.
+
+Test runs are executed in an arbitrary order. Each run begins by calling
+`setup_run`, then executes any subordinate fixture functions and tests, and
+then calls the matching `teardown_run` function (if there is one).
 
 
 ## Managing Resources
@@ -207,7 +207,7 @@ function test_more_output()
 
 Dr. Strangetest's fixture functions form a hierarchy with directories at the
 top and individual tests at the bottom. Setup functions can provide state to
-functions lower in the hierarchy by returning an array of items, which will be
+functions lower in the hierarchy by returning an array of items, which are
 unpacked and provided as arguments to subordinate fixture functions, class
 constructors, and test functions. These subordinate functions accept them by
 adding parameters to their signature.
@@ -221,10 +221,9 @@ particular level in the hierarchy, state is passed directly to the next
 subordinate setup function, test function or test class.
 
 State is also passed to teardown functions, but these functions never return
-any, they only clean up the state given to them. Teardown functions receive
+state, they only clean up what is given to them. Teardown functions receive
 either the state returned by their corresponding setup function, if there is
-one, or the state that would have been passed to the corresponding setup
-function.
+one, or the state returned by the next superior setup function.
 
 Inside of a object, things work a little differently. Since an object's methods
 all have access to their object's shared state, fixture methods can directly
@@ -301,9 +300,9 @@ class TestDatabase
 
 In the above example, since there is no file setup function, the state returned
 from `test\setup` is provided directly to `test\TestDatabase`. Once passed to a
-constructor, the state becomes available from within a test object as part of
-the object's shared state. Consequently, fixture methods never return or
-receive state. However, you could also write your test using functions:
+constructor, the state becomes available from within the object as part of the
+object's shared state. Consequently, fixture methods never return or receive
+state. However, you could also write your test using functions:
 
 ```php
 <?php declare(strict_types=1);
@@ -517,12 +516,14 @@ function test(OrderManager $order): void
 
 ## Running Tests Multiple Times
 
-Run fixture functions let you run your tests multiple times using different
-arguments. This might be useful if you have multiple implementations of a
-service and you want to ensure client code behaves identically regardless of
-the service implementation that's used. Run fixture functions may be used in a
-directory's `setup.php` to run all tests in that directory multiple times, or
-within a test file to run all tests in that file multiple times.
+[Run fixture functions](@#run-setup-and-teardown) let you take advantage of
+[test parameterization](@#providing-state-to-tests) and run your tests multiple
+times with varying parameters. This might be useful if you have multiple
+implementations of a service and you want to ensure client code behaves
+identically regardless of the service implementation that's used. Run fixture
+functions may be used in a directory's `setup.php` to run all tests in that
+directory multiple times, or within a test file to run all tests in that file
+multiple times.
 
 Run setup functions are functions whose name begins with `setup_run_`. The
 remainder of the function name is used to name the test run, which is used in
@@ -535,18 +536,18 @@ will be identified in the test report as:
 If Dr. Strangetest is unable to determine a unique run name from a run setup
 function, an error is reported and the run is skipped.
 
+Like other setup fixtures, run setup functions are provided with the current
+test state. Unlike other setup fixtures, run setup functions **MUST** return
+state. Since the whole point of run fixtures is to exercise your tests multiple
+times with varying arguments, each run fixture must provide arguments to use in
+your tests.
+
 Run teardown functions can also be defined, but they cannot exist on their own,
-they must defined in conjunction with a run setup function. Run teardown
+they must be defined in conjunction with a run setup function. Run teardown
 functions are functions whose name begins with `teardown_run_`. The remainder
 of the function name must match a run name defined by a run setup function. The
 run teardown function is passed whatever state is returned by its corresponding
 setup function.
-
-Like other setup fixtures, run setup functions are provided with the current
-test state. Unlike other setup fixtures, run setup functions **MUST** return
-state. The expectation is that multiple run fixture functions will be defined
-with each returning different state for use in subordinate tests. This means,
-of course, that each function must return state.
 
 Continuing with the previous example, assume there are multiple database and
 payment processor backends that we want to support, and we want to ensure
@@ -560,29 +561,29 @@ processor.
 
 namespace test;
 
+use example\Database;
 use example\DatabaseX;
 use example\DatabaseY;
 
 function setup_run_database_x(): array
 {
     $database = new DatabaseX();
-    $database->createDatabase();
     return [$database];
-}
-
-function teardown_run_database_x(DatabaseX $database): void
-{
-    $database->deleteDatabase();
 }
 
 function setup_run_database_y(): array
 {
     $database = new DatabaseY();
+    return [$database];
+}
+
+function setup(Database $database): array
+{
     $database->createDatabase();
     return [$database];
 }
 
-function teardown_run_database_y(DatabaseY $database): void
+function teardown(Database $database): void
 {
     $database->deleteDatabase();
 }
@@ -601,29 +602,28 @@ use example\PaymentProcessorA;
 use example\PaymentProcessorB;
 use function strangetest\assert_true;
 
-function setup_file(Database $database): array
-{
-    $database->loadTestData();
-    return [$database];
-}
-
-function teardown_file(Database $database): void
-{
-    $database->clearTestData();
-}
-
 function setup_run_processor_a(Database $database): array
 {
     $processor = new PaymentProcessorA();
-    $processor->setTestMode();
     return [$database, $processor];
 }
 
 function setup_run_processor_b(Database $database): array
 {
     $processor = new PaymentProcessorB();
+    return [$database, $processor];
+}
+
+function setup_file(Database $database, PaymentProcessor $processor): array
+{
+    $database->loadTestData();
     $processor->setTestMode();
     return [$database, $processor];
+}
+
+function teardown_file(Database $database, PaymentProcessor $_): void
+{
+    $database->clearTestData();
 }
 
 function setup(Database $database, PaymentProcessor $processor): array

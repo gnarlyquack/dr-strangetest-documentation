@@ -1,10 +1,6 @@
 <?php declare(strict_types=1);
 
-function produce_output(): void
-{
-    echo 'Expected output';
-    trigger_error('Did I err?');
-}
+namespace test1;
 
 function test_output(): void
 {

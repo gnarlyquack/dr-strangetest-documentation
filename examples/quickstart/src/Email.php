@@ -4,9 +4,11 @@ namespace example;
 
 final class Email
 {
-    private $email;
+    private function __construct(public readonly string $email)
+    {
+    }
 
-    public function __construct(string $email)
+    static public function fromString(string $email): self
     {
         if (false === \filter_var($email, \FILTER_VALIDATE_EMAIL))
         {
@@ -14,7 +16,7 @@ final class Email
                 \sprintf('"%s" is not a valid email address', $email)
             );
         }
-        $this->email = $email;
+        return new self($email);
     }
 
     public function __toString(): string

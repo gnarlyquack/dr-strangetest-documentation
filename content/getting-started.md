@@ -3,7 +3,7 @@
 
 ## Requirements
 
-Dr. Strangetest supports PHP versions 5.3 through 8.0.
+Dr. Strangetest supports PHP versions 5.3 through 8.1.
 
 For PHP 7 or later, `zend.assertions` must NOT be in production mode.
 
@@ -30,21 +30,21 @@ If you make the Phar executable you can run it directly:
 
 Install Dr. Strangetest using Composer:
 
-    composer require --dev gnarlyquack/dr-strangetest
+    $ composer require --dev dr-strangetest/dr-strangetest=*
 
-Composer installs the `strangetest` executable in its `bin-dir`, which defaults
-to `vendor/bin`. Assuming the default `bin-dir`, run Dr. Strangetest as follows:
+Composer installs the `strangetest` executable in its `bin-dir` (which defaults
+to `vendor/bin`), which you can run as follows:
 
-    $ ./vendor/bin/strangetest
+    $ composer exec -- strangetest
 
 
 ## Verifying Installation
 
-If all went well, you now have Dr. Strangetet's executable somewhere in your
+If all went well, you now have Dr. Strangetest's executable somewhere in your
 project path. From hereon, references to `strangetest` refer to the location of
 this executable.
 
 You can verify installation succeeded by trying to run the executable:
 
     $ strangetest --version
-    Dr. Strangetest x.y.z
+    Dr. Strangetest 0.1.0

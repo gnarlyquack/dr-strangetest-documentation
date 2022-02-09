@@ -21,8 +21,8 @@ the community.
 
 If you think you've found a bug in the software, please report it. Or if you
 think there's an important feature that's missing, feel free to make a
-suggestion and start a discussion. Both can be done using Dr.  Strangetest's
-[issue tracker](https://github.com/gnarlyquack/easytest).
+suggestion and start a discussion. Both can be done using Dr. Strangetest's
+[issue tracker](https://github.com/gnarlyquack/dr-strangetest/issues).
 
 
 ## Improve Documentation
@@ -30,16 +30,17 @@ suggestion and start a discussion. Both can be done using Dr.  Strangetest's
 Documentation, it seems, is always a work in progress. If you find something
 that's incorrect, incomplete, out of date, or confusing, or an example is
 missing or could be improved, you can [open an
-issue](https://github.com/gnarlyquack/easytest) to report a deficiency or
-suggest an improvement. Or if you have some writing chops you'd like to flex,
-you can update the documentation directly and submit a pull request.
+issue](https://github.com/gnarlyquack/dr-strangetest/issues) to report a
+deficiency or suggest an improvement. Or if you have some writing chops you'd
+like to flex, you can update the documentation directly and submit a pull
+request.
 
 
 ## Participate in Development
 
 Pull requests are always welcome! Head over to [Dr. Strangetest's source
-repository](https://github.com/gnarlyquack/easytest) to obtain the code. It's
-recommended that you make known your intention to work on an issue to avoid
-duplication of effort. For the same reason, if you're not working on an
+repository](https://github.com/gnarlyquack/dr-strangetest) to obtain the code.
+It's recommended that you make known your intention to work on an issue to
+avoid duplication of effort. For the same reason, if you're not working on an
 existing issue, it's recommended that you first open one to announce and
 potentially discuss the work you intend to do.

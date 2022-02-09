@@ -2,7 +2,7 @@
 
 use example\greet\{MorningGreet, AfternoonGreet, EveningGreet, NightGreet};
 
-function test_greetings(strangetest\Context $context)
+function test_greetings_subtest(strangetest\Context $context)
 {
     $greetings = [
         [new MorningGreet, 'Good morning, world!'],

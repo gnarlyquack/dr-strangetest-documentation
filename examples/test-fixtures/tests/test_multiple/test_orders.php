@@ -10,29 +10,28 @@ use example\PaymentProcessorA;
 use example\PaymentProcessorB;
 use function strangetest\assert_true;
 
-function setup_file(Database $database): array
-{
-    $database->loadTestData();
-    return [$database];
-}
-
-function teardown_file(Database $database): void
-{
-    $database->clearTestData();
-}
-
 function setup_run_processor_a(Database $database): array
 {
     $processor = new PaymentProcessorA();
-    $processor->setTestMode();
     return [$database, $processor];
 }
 
 function setup_run_processor_b(Database $database): array
 {
     $processor = new PaymentProcessorB();
+    return [$database, $processor];
+}
+
+function setup_file(Database $database, PaymentProcessor $processor): array
+{
+    $database->loadTestData();
     $processor->setTestMode();
     return [$database, $processor];
+}
+
+function teardown_file(Database $database, PaymentProcessor $_): void
+{
+    $database->clearTestData();
 }
 
 function setup(Database $database, PaymentProcessor $processor): array

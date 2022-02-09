@@ -1,5 +1,10 @@
 <?php
 
+namespace dependencies;
+
+use strangetest;
+
+
 function test_one(strangetest\Context $context)
 {
     $context->set(1);

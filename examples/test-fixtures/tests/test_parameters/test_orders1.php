@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 // test_orders.php
 
-namespace test\orders;
+namespace test1\orders;
 
 use example\Database;
 use example\OrderManager;

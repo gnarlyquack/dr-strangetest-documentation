@@ -3,6 +3,7 @@ import http as _http
 import os as _os
 import shutil as _shutil
 import sys as _sys
+#import urllib.error.HTTPError as _HTTPError
 import urllib.request as _urlrequest
 
 import cmark as _cmark
@@ -351,12 +352,16 @@ def check_urls(site):
             url = link.url
             if site.remote_urls:
                 request = _urlrequest.Request(link.url, method='HEAD')
-                response = _urlrequest.urlopen(request)
+                try:
+                    response = _urlrequest.urlopen(request)
+                except _urlrequest.HTTPError as e:
+                    msg = f"On page {link.file}:\nerror checking url '{link.url}':\n{e}\n"
+                    _sys.exit(msg)
                 assert 200 == response.status, \
                     "url {} got response {} {}".format(
                         link.url, reponse.status, _http.HTTPStatus(response.status).name)
                 if response.url != link.url:
-                    print(f"{link.url} resolved to:\n{response.url}")
+                    print(f"On page {link.file}:\nresolved '{link.url}' to:\n{response.url}\n")
 
         _htmltools.set_attribute(link.element, 'href', url)
         if link.url not in checked:

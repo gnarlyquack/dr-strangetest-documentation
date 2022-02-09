@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 // test.php
 
-namespace test;
+namespace test1;
 use example\Database;
 use function strangetest\assert_identical;
 

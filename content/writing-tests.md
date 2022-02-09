@@ -145,14 +145,13 @@ A test "passes" unless an assertion fails or an error happens. Failures and
 errors are signalled by throwing an exception. This means a test typically ends
 immediately when a failure or an error happens.
 
-Failed assertions are exceptions that are instances of `strangetest\Failure`.
-In PHP 7 and higher, this is a subclass of PHP's built-in `AssertionError`
-exception. Any other exception is treated as an error.
+Failed assertions are exceptions that are instances of PHP's built-in
+`AssertionError` exception (or in PHP 5, instances of `strangetest\Failure`).
+Any other exception is treated as an error.
 
 Although prior examples use assertions provided by Dr. Strangetest, you can
 also use PHP's built-in `assert` function. Failed assertions are automatically
-converted into exceptions as described above, and in PHP 7.2 and higher
-`assert.exception` is automatically enabled.
+converted to an exception and thrown.
 
 ```php
 function testHelloToTheWorld()
@@ -190,11 +189,11 @@ function test_division_by_zero()
 }
 ```
 
-Testing for errors is exactly the same, as (non-fatal) PHP errors are
-automatically converted into an `ErrorException` and thrown. In fact, the above
-test will fail in PHP 7.4 and earlier, because division by zero triggers a
-warning error instead of throwing an exception. To make the test pass across
-multiple versions of PHP, you might update the test as follows:
+You can use the exact same technique to test for errors, as (non-fatal) PHP
+errors are automatically converted into an `ErrorException` and thrown. In
+fact, the above test will fail in PHP 7.4 and earlier because division by zero
+triggers a warning error instead of throwing an exception. To make the test
+pass across multiple versions of PHP, you might update the test as follows:
 
 ```php
 function test_division_by_zero()
@@ -292,9 +291,9 @@ skipped and why:
 ## Subtests
 
 Subtests ensure a test continues even if an assertion fails. This can be useful
-if you want to exercise a single test repeated with multiple data sets, or if
-the outcome of several assertions can give a better idea of why a particular
-assertion failed. Dr. Strangetest implements this through the
+if you want to exercise a single test repeatedly with multiple data sets, or if
+the outcome of several assertions can give a better idea of why one of the
+assertions might have failed. Dr. Strangetest implements this through the
 `strangetest\Context` interface, an instance of which is provided as the last
 argument to every test function and test method.
 
@@ -456,11 +455,10 @@ there is no requirement for a prerequisite to do so.
 
 Dr. Strangetest implements this through the `strangetest\Context` interface, an
 instance of which is provided as the last argument to every test function and
-test method. The interface provides two methods: `set` and `requires`. `set`
-allows prerequisites to [save a result value](@#setting-a-test-result), and
-`requires` allows dependents to [declare
-dependencies](@#declaring-dependencies) on prerequisites and retrieve any saved
-result a prerequisite may have saved.
+test method. The interface provides two methods: `set` allows prerequisites to
+[save a result value](@#setting-a-test-result), and `requires` allows
+dependents to [declare dependencies](@#declaring-dependencies) on prerequisites
+and retrieve any saved result a prerequisite may have saved.
 
 ```php
 <?php
@@ -504,7 +502,7 @@ public strangetest\Context::requires(string ...$names): mixed
 `$names` is one or more [test function names provided as a
 string](@#specifying-test-names). At least one name must be provided.
 
-Depending on the state of the provided names, one of the following is returned:
+Depending on the provided names, one of the following is returned:
 -   If one or more of the tests specified in `$names` has failed, an instance
     of `strangetest\Skip` is thrown.
 -   If one or more of the tests specified in `$names` has not been run, an
@@ -682,32 +680,33 @@ pass. The prerequisite may [set a result](@#setting-a-test-result) as normal.
 
 ### Depending on Tests That Are Run Multiple Times
 
-Dr. Strangetest's [test fixtures](@test-fixtures) make it possible to [run
-tests multiple times](@test-fixtures#running-tests-multiple-times). Dependents
-may themselves be run multiples times and may declare dependencies on
-prerequisites that may also be run multiple times. How dependencies are
-resolved depends on the relationship between the two tests.
+Dr. Strangetest's [test fixtures](@test-fixtures#run-setup-and-teardown) make
+it possible to [run tests multiple
+times](@test-fixtures#running-tests-multiple-times). Dependents may be run
+multiple times and may declare dependencies on prerequisites that may also be
+run multiple times. How dependencies are resolved depends on the relationship
+between the two tests.
 
 By default, there is an implicit, top-level test run that comprises all the
 tests in the test suite. If a test suite does not use any test run fixtures,
-the entire test suite will consist of just this one test run. However, run
-fixtures create "sub-runs" that are children of the top-level run: the tests
-are part of the top-level run, but they are executed multiple times within it.
-A sub-run may, in turn, have its own sub-runs. This forms a tree: every sub-run
-is a child of exactly one parent run.
+the entire test suite will consist of just this one run. However, each run
+fixture creates a "sub-run": the tests are executed multiple times within the
+top-level run, once for each sub-run. A sub-run may also have sub-runs of its
+own. This forms a hierarchy: every sub-run is a child of a parent run.
 
 When a test is executed, it is executed within the context of a particular run.
 If a test belongs to multiple runs, it is executed once for every run. Dr.
-Strangetest remembers the outcome of every test execution as well as any result
-the test may have saved and associates them with the appropriate run.
+Strangetest remembers the outcome of every test execution and associates it
+with the appropriate run.
 
 Given some test run, the tests that constitute the run are executed one or more
-times (with multiple test executions implying the test belongs to sub-runs of
-the current run). If all of a test's executions pass, the test passes the run,
-otherwise it fails. If we're interested in the outcome of particular test but
-the test is not part of the current run, we can move up the hierarchy until
-finding a run that includes the test (potentially reaching the top-level run,
-which includes every test).
+times (with multiple test executions meaning the test belongs to sub-runs of
+the current run). Within the context of a test run, if every execution of a
+particular test passes, the test passes the run, otherwise it fails. If we're
+interested in the outcome of a particular test but the test is not part of the
+current run, we can move up the hierarchy until finding a parent run that
+includes the test (potentially reaching the top-level run, which includes every
+test) and use the test's outcome for that parent run.
 
 When a dependent is executed, it will have some run in common with its
 prerequisite: either the prerequisite is part of the same run, or the two tests
@@ -717,8 +716,7 @@ satisfied. If this resolves to a single execution of the prerequisite and the
 prerequisite saved a result, that result is provided to the dependent.
 Otherwise, no test result is available.
 
-This explanation may be conceptually difficult to grasp, so here is an example
-that hopefully demonstrates this more clearly:
+Here is an example that demonstrates these concepts:
 
 ```php
 <?php
@@ -842,30 +840,31 @@ runs being `(dir1)`, and `(dir2)`.
 
 Consider the dependencies declared in `a\test_two`:
 
--   `a\test_one` is in the same run, so the dependency is determined by each
-    run of `a\test_one`, which also means each test result saved by
-    `a\test_one` is available to `a\test_two`. This is verified by asserting
-    that the retrieved values are the same as those received by parameters
-    `$dir_arg` and `$file_arg`.
+-   `test_one` resolves to `a\test_one`, which is in the same run, so the
+    dependency is determined by each run of `a\test_one`, which also means each
+    test result saved by `a\test_one` is available to `a\test_two`. This is
+    verified by asserting that the retrieved values are the same as the
+    arguments provides to `a\test_two` (since `a\test_one` and `a\test_two`
+    both receive the same arguments).
 
--   `b\test_one` is not in the same run, but there is a common parent run:
-    `a\test_two (dir1, a1)` and `a\test_two (dir1, a2)` depend on `b\test_one
-    (dir1)`, while `a\test_two (dir2, a1)` and `a\test_two (dir2, a2)` depend
-    on `b\test_one (dir2)`. In each case, the dependency is determined by two
-    runs of `b\test_one`: `b\test_one (dir1)` is determined by the net result
-    of `b\test_one (dir1, b1)` and `b\test_one (dir1, b2)`, while `b\test_one
-    (dir2)` is determined by the net result of `b\test_one (dir2, b1)` and
-    `b\test_one (dir2, b2)`. Consequently, no saved results are available to
-    `a\test_two`.
+-   `b\test_one` is not in the same run, but there are two parent runs in
+    common: `dir1` and `dir2`. Therefore, `a\test_two (dir1, a1)` and
+    `a\test_two (dir1, a2)` both depend on `b\test_one (dir1)`, while
+    `a\test_two (dir2, a1)` and `a\test_two (dir2, a2)` both depend on
+    `b\test_one (dir2)`. In each case, the dependency is determined by two runs
+    of `b\test_one`: `b\test_one (dir1)` is determined by `b\test_one (dir1,
+    b1)` and `b\test_one (dir1, b2)`, while `b\test_one (dir2)` is determined
+    by `b\test_one (dir2, b1)` and `b\test_one (dir2, b2)`. Consequently, no
+    saved results are available to `a\test_two`.
 
--   `c\test_one` is also not in the same run, and like `b\test_one` has the
-    same parent runs in common: `a\test_two (dir1, a1)` and `a\test_two (dir1,
-    a2)` depend on `c\test_one (dir1)`, while `a\test_two (dir2, a1)` and
-    `a\test_two (dir2, a2)` depend on `c\test_one (dir2)`. Unlike `b\test_one`,
-    this time each dependency is determined by a single run of `c\test_one`,
-    and so the test's saved results are available to `a\test_two`. This is
-    verified by asserting that the retrieved values is the same as that
-    received by the `$dir_arg` parameter.
+-   `c\test_one` is also not in the same run, but like `b\test_one` has the
+    same parent runs in common: `dir1` and `dir2`. Therefore, `a\test_two
+    (dir1, a1)` and `a\test_two (dir1, a2)` both depend on `c\test_one (dir1)`,
+    while `a\test_two (dir2, a1)` and `a\test_two (dir2, a2)` both depend on
+    `c\test_one (dir2)`. Unlike `b\test_one`, this time each dependency is
+    determined by a single run of `c\test_one`, and so the test's saved results
+    are available to `a\test_two`. This is verified by asserting that the
+    retrieved values is the same as that received by the `$dir_arg` parameter.
 
 From this, it is hopefully clear how the dependencies for `b\test_two` and
 `c\test_two` are resolved.

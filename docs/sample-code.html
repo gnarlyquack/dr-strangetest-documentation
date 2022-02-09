@@ -4,9 +4,11 @@
 
 <span class="k">final</span> <span class="k">class</span> <span class="nc">Email</span>
 <span class="p">{</span>
-    <span class="k">private</span> <span class="nv">$email</span><span class="p">;</span>
+    <span class="k">private</span> <span class="k">function</span> <span class="fm">__construct</span><span class="p">(</span><span class="k">public</span> <span class="nx">readonly</span> <span class="nx">string</span> <span class="nv">$email</span><span class="p">)</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
 
-    <span class="k">public</span> <span class="k">function</span> <span class="fm">__construct</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$email</span><span class="p">)</span>
+    <span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">fromString</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$email</span><span class="p">)</span><span class="o">:</span> <span class="nx">self</span>
     <span class="p">{</span>
         <span class="k">if</span> <span class="p">(</span><span class="k">false</span> <span class="o">===</span> <span class="nx">\filter_var</span><span class="p">(</span><span class="nv">$email</span><span class="p">,</span> <span class="nx">\FILTER_VALIDATE_EMAIL</span><span class="p">))</span>
         <span class="p">{</span>
@@ -14,7 +16,7 @@
                 <span class="nx">\sprintf</span><span class="p">(</span><span class="s1">&#39;&quot;%s&quot; is not a valid email address&#39;</span><span class="p">,</span> <span class="nv">$email</span><span class="p">)</span>
             <span class="p">);</span>
         <span class="p">}</span>
-        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">email</span> <span class="o">=</span> <span class="nv">$email</span><span class="p">;</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">self</span><span class="p">(</span><span class="nv">$email</span><span class="p">);</span>
     <span class="p">}</span>
 
     <span class="k">public</span> <span class="k">function</span> <span class="fm">__toString</span><span class="p">()</span><span class="o">:</span> <span class="nx">string</span>
@@ -23,13 +25,11 @@
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>If using Composer, you can autoload the code by putting something like the following in <code>composer.json</code>:</p><div class="highlight"><pre><span></span><code><span class="p">{</span>
-    <span class="nt">&quot;autoload&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;classmap&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&quot;src/&quot;</span>
-        <span class="p">]</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+<p>If using Composer, you can autoload the code by putting something like the following in <code>composer.json</code>:</p><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;autoload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;classmap&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;src/&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>Then create the autoloader:</p><div class="highlight"><pre><span></span><code><span class="gp">$ </span>composer install
 </code></pre></div>

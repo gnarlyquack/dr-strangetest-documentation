@@ -1,10 +1,7 @@
 <?php declare(strict_types=1);
 
-function produce_output(): void
-{
-    echo 'Expected output';
-    trigger_error('Did I err?');
-}
+namespace test2;
+use strangetest;
 
 function test_output(strangetest\Context $context): void
 {

@@ -1,6 +1,6 @@
 # Assertions
 
-If a particular test is supposed to produced a particular outcome, assertions
+If a particular test is supposed to produce a particular outcome, assertions
 are how you verify that outcome. This chapter details the various ways you can
 make assertions in Dr. Strangetest.
 
