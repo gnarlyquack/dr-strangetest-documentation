@@ -372,7 +372,8 @@ def render(templates):
     with _os.scandir('docs') as it:
         for entry in it:
             if entry.is_file():
-                _os.remove(entry)
+                if 'CNAME' != entry.name:
+                    _os.remove(entry)
             elif entry.is_dir():
                 _shutils.rmtree(entry)
             else:
