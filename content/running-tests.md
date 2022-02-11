@@ -102,9 +102,9 @@ This tests two methods, `testOne` and `testTwo`, in classes `TestFoo` and
 ### Specifying Test Runs
 
 You can limit tests to one or more [test
-runs](test-fixtures#run-setup-and-teardown) within a file or directory by using
-run specifiers. A run specifier must follow a file or directory path and is
-written as follows:
+runs](@test-fixtures#run-setup-and-teardown) within a file or directory by
+using run specifiers. A run specifier must follow a file or directory path and
+is written as follows:
 
     --run=NAME...
 
